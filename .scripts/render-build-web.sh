@@ -6,15 +6,18 @@ cd "$(dirname "$0")/.."
 resolve_api_url() {
   local url=""
 
-  # Blueprint: hostname correcto da API (prioridade sobre VITE manual errado)
-  if [[ -n "${API_PUBLIC_HOST:-}" ]]; then
+  if [[ -n "${VITE_API_BASE_URL:-}" ]]; then
+    url="$VITE_API_BASE_URL"
+    if [[ "$url" == /* ]]; then
+      echo "${url%/}"
+      return
+    fi
+  elif [[ -n "${API_PUBLIC_HOST:-}" ]]; then
     url="https://${API_PUBLIC_HOST}"
   elif [[ -n "${RENDER_EXTERNAL_URL:-}" ]]; then
     url="${RENDER_EXTERNAL_URL}"
-  elif [[ -n "${VITE_API_BASE_URL:-}" ]]; then
-    url="$VITE_API_BASE_URL"
   else
-    echo "Defina API_PUBLIC_HOST ou VITE_API_BASE_URL no Render (smart-campus-web)." >&2
+    echo "Defina VITE_API_BASE_URL=/api/v1 (unificado) ou API_PUBLIC_HOST." >&2
     exit 1
   fi
 

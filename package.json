@@ -30,7 +30,8 @@
     "verify:deploy": "bash .scripts/verify-deploy.sh",
     "validate:render": "bash .scripts/validate-render-blueprint.sh",
     "diagnose:deploy": "bash .scripts/diagnose-deploy.sh",
-    "checklist:render": "bash .scripts/render-checklist.sh"
+    "checklist:render": "bash .scripts/render-checklist.sh",
+    "build:render:unified": "bash .scripts/render-build-unified.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

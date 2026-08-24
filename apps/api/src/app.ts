@@ -58,17 +58,26 @@ export function createApp() {
     });
   });
 
-  app.get('/', (_req, res) => {
-    res.json({
-      service: 'smart-campus-api',
-      docs: '/api/docs',
-      health: '/health',
-      api: '/api/v1',
+  const moduleDir = dirname(fileURLToPath(import.meta.url));
+  const webDistCandidates = [
+    join(process.cwd(), 'apps/web/dist'),
+    join(moduleDir, '../../web/dist'),
+  ];
+  const webDist = webDistCandidates.find((p) => existsSync(p));
+  const serveWebUi = Boolean(webDist && env.NODE_ENV === 'production');
+
+  if (!serveWebUi) {
+    app.get('/', (_req, res) => {
+      res.json({
+        service: 'smart-campus-api',
+        docs: '/api/docs',
+        health: '/health',
+        api: '/api/v1',
+      });
     });
-  });
+  }
 
   try {
-    const moduleDir = dirname(fileURLToPath(import.meta.url));
     const candidates = [
       join(process.cwd(), 'docs/openapi.yaml'),
       join(moduleDir, '../../../docs/openapi.yaml'),
@@ -97,6 +106,17 @@ export function createApp() {
   v1.use(parkingRouter);
 
   app.use('/api/v1', v1);
+
+  if (serveWebUi && webDist) {
+    app.use(express.static(webDist));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/') || req.path === '/health') {
+        next();
+        return;
+      }
+      res.sendFile(join(webDist, 'index.html'));
+    });
+  }
 
   app.use((_req, res) => {
     res.status(404).json({
