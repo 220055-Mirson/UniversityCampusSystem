@@ -36,6 +36,18 @@ git push -u origin feature/grupo-academico-courses-crud
 
 ---
 
+## Git hooks (atribuição)
+
+Configure uma vez por clone para evitar trailers `Co-authored-by: Cursor` nos commits:
+
+```bash
+git config core.hooksPath .githooks
+chmod +x .githooks/commit-msg .githooks/prepare-commit-msg .scripts/check-no-cursor-attribution.sh
+bash .scripts/check-no-cursor-attribution.sh
+```
+
+---
+
 ## Branches
 
 ```text

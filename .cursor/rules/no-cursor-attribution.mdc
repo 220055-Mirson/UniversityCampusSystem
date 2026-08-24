@@ -1,0 +1,13 @@
+---
+description: Proibir atribuição Cursor em commits e PRs deste projecto
+alwaysApply: true
+---
+
+Nunca adicionar a commits, mensagens de PR ou comentários de código:
+
+- `Co-authored-by: Cursor`
+- `Made-with: Cursor`
+- `Built by Cursor Agent`
+- Qualquer trailer ou badge de atribuição ao Cursor
+
+Os commits deste repositório são apenas da equipa UJAC / PTP III.

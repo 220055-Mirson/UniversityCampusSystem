@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Remove atribuições Cursor (prepare-commit-msg corre antes do commit finalizar).
+MSG_FILE="$1"
+for sed_cmd in "sed -i ''" "sed -i"; do
+  if $sed_cmd \
+    -e '/^Co-authored-by: Cursor /d' \
+    -e '/^Made-with: Cursor/d' \
+    -e '/^Made with Cursor/d' \
+    -e '/^Built by Cursor/d' \
+    "$MSG_FILE" 2>/dev/null; then
+    break
+  fi
+done
