@@ -64,17 +64,19 @@ if [[ -z "$DATABASE_URL" ]]; then
   exit 1
 fi
 
-if [[ "$DATABASE_URL" == *'?'* ]]; then
-  DATABASE_URL="${DATABASE_URL}&schema=public"
-else
-  DATABASE_URL="${DATABASE_URL}?schema=public"
+if [[ "$DATABASE_URL" != *'schema='* ]]; then
+  if [[ "$DATABASE_URL" == *'?'* ]]; then
+    DATABASE_URL="${DATABASE_URL}&schema=public"
+  else
+    DATABASE_URL="${DATABASE_URL}?schema=public"
+  fi
 fi
 
 cat >"$DEPLOY_ENV_FILE" <<EOF
 # Gerado por .scripts/provision-neon.sh — não commitar
 NEON_PROJECT_ID=${PROJECT_ID}
 NEON_PROJECT_NAME=${PROJECT_NAME}
-DATABASE_URL=${DATABASE_URL}
+DATABASE_URL="${DATABASE_URL}"
 EOF
 
 chmod 600 "$DEPLOY_ENV_FILE" 2>/dev/null || true
