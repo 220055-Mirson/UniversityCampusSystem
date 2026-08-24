@@ -1,0 +1,431 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  STUDENT
+  TEACHER
+  TECHNICIAN
+  COORDINATOR
+  ADMIN
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  RESERVED
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+  UNKNOWN
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  code        RoleCode @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  fullName     String
+  isActive     Boolean        @default(true)
+  roleId       String
+  role         Role           @relation(fields: [roleId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  refreshTokens RefreshToken[]
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+  reportedIncidents Incident[] @relation("IncidentReporter")
+  assignedIncidents Incident[] @relation("IncidentAssignee")
+  auditEvents  AuditEvent[]
+  notifications Notification[]
+  maintenanceActions MaintenanceAction[]
+
+  @@index([roleId])
+  @@index([isActive])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  courses     Course[]
+  teachers    TeacherProfile[]
+}
+
+model Course {
+  id           String     @id @default(cuid())
+  code         String     @unique
+  name         String
+  description  String?
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  subjects     Subject[]
+  students     StudentProfile[]
+  enrolments   Enrolment[]
+
+  @@index([departmentId])
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  credits   Int      @default(0)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model StudentProfile {
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentNumber  String      @unique
+  courseId       String?
+  course         Course?     @relation(fields: [courseId], references: [id])
+  yearOfStudy    Int?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  enrolments     Enrolment[]
+
+  @@index([courseId])
+}
+
+model TeacherProfile {
+  id           String      @id @default(cuid())
+  userId       String      @unique
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeCode String      @unique
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([departmentId])
+}
+
+model Enrolment {
+  id        String         @id @default(cuid())
+  studentId String
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course         @relation(fields: [courseId], references: [id])
+  academicYear String
+  status    String         @default("ACTIVE")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([studentId, courseId, academicYear])
+  @@index([courseId])
+}
+
+model Building {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  floors      Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rooms       Room[]
+  laboratories Laboratory[]
+}
+
+model Room {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  capacity    Int
+  floor       Int        @default(0)
+  status      RoomStatus @default(AVAILABLE)
+  buildingId  String
+  building    Building   @relation(fields: [buildingId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  equipment   Equipment[]
+  incidents   Incident[]
+  devices     Device[]
+
+  @@index([buildingId])
+  @@index([status])
+}
+
+model Laboratory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  buildingId  String
+  building    Building @relation(fields: [buildingId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  equipment   Equipment[]
+
+  @@index([buildingId])
+}
+
+model Equipment {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  description   String?
+  roomId        String?
+  room          Room?        @relation(fields: [roomId], references: [id])
+  laboratoryId  String?
+  laboratory    Laboratory?  @relation(fields: [laboratoryId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  incidents     Incident[]
+
+  @@index([roomId])
+  @@index([laboratoryId])
+}
+
+model Incident {
+  id           String           @id @default(cuid())
+  title        String
+  description  String
+  status       IncidentStatus   @default(OPEN)
+  priority     IncidentPriority @default(MEDIUM)
+  roomId       String?
+  room         Room?            @relation(fields: [roomId], references: [id])
+  equipmentId  String?
+  equipment    Equipment?       @relation(fields: [equipmentId], references: [id])
+  reporterId   String
+  reporter     User             @relation("IncidentReporter", fields: [reporterId], references: [id])
+  assigneeId   String?
+  assignee     User?            @relation("IncidentAssignee", fields: [assigneeId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  closedAt     DateTime?
+  maintenanceActions MaintenanceAction[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([reporterId])
+  @@index([assigneeId])
+  @@index([roomId])
+}
+
+model MaintenanceAction {
+  id          String   @id @default(cuid())
+  incidentId  String
+  incident    Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  performedBy String
+  performer   User     @relation(fields: [performedBy], references: [id])
+  notes       String
+  createdAt   DateTime @default(now())
+
+  @@index([incidentId])
+}
+
+model Device {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  type        String
+  status      DeviceStatus @default(UNKNOWN)
+  roomId      String?
+  room        Room?        @relation(fields: [roomId], references: [id])
+  mqttTopic   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  sensors     Sensor[]
+
+  @@index([status])
+  @@index([roomId])
+}
+
+model Sensor {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  metric    String
+  unit      String?
+  deviceId  String
+  device    Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  readings  Reading[]
+  alerts    Alert[]
+
+  @@index([deviceId])
+}
+
+model Reading {
+  id        String   @id @default(cuid())
+  sensorId  String
+  sensor    Sensor   @relation(fields: [sensorId], references: [id], onDelete: Cascade)
+  value     Float
+  recordedAt DateTime @default(now())
+  isDemo    Boolean  @default(true)
+
+  @@index([sensorId, recordedAt])
+}
+
+model Alert {
+  id          String        @id @default(cuid())
+  title       String
+  message     String
+  severity    AlertSeverity @default(INFO)
+  sensorId    String?
+  sensor      Sensor?       @relation(fields: [sensorId], references: [id])
+  acknowledged Boolean      @default(false)
+  isDemo      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([severity])
+  @@index([acknowledged])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  action         String
+  resource       String
+  resourceId     String?
+  actorId        String?
+  actor          User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  correlationId  String
+  ipAddress      String?
+  userAgent      String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([action])
+  @@index([resource])
+  @@index([actorId])
+  @@index([correlationId])
+  @@index([createdAt])
+}
+
+enum ParkingSpotStatus {
+  FREE
+  OCCUPIED
+  RESERVED
+  OUT_OF_SERVICE
+}
+
+enum PlateDirection {
+  IN
+  OUT
+}
+
+model ParkingLot {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  name        String
+  description String?
+  capacity    Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  spots       ParkingSpot[]
+  readings    PlateReading[]
+}
+
+model ParkingSpot {
+  id         String            @id @default(cuid())
+  code       String
+  rowLabel   String
+  level      Int               @default(0)
+  status     ParkingSpotStatus @default(FREE)
+  plate      String?
+  lotId      String
+  lot        ParkingLot        @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  readings   PlateReading[]
+
+  @@unique([lotId, code])
+  @@index([lotId, status])
+}
+
+model PlateReading {
+  id           String         @id @default(cuid())
+  plate        String
+  direction    PlateDirection
+  confidence   Float          @default(0.9)
+  photoUrl     String?
+  sensorCode   String
+  isDemo       Boolean        @default(true)
+  lotId        String
+  lot          ParkingLot     @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  spotId       String?
+  spot         ParkingSpot?   @relation(fields: [spotId], references: [id], onDelete: SetNull)
+  recordedAt   DateTime       @default(now())
+
+  @@index([lotId, recordedAt])
+  @@index([plate])
+  @@index([spotId])
+}

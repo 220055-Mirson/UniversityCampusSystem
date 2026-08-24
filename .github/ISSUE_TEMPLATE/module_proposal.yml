@@ -1,0 +1,56 @@
+name: Module proposal
+description: Propor ou reclamar um módulo para o grupo PTP III
+title: "[Grupo] Module: "
+labels: ["module", "ptp3"]
+body:
+  - type: dropdown
+    id: group
+    attributes:
+      label: Grupo / área
+      options:
+        - Grupo Académico
+        - Grupo Infraestrutura
+        - Grupo Manutenção
+        - Grupo IoT
+        - Grupo Relatórios
+        - Core (coordenação)
+    validations:
+      required: true
+  - type: input
+    id: module_key
+    attributes:
+      label: Chave do módulo (campusModules)
+      description: Ex. courses, sensors, reports
+      placeholder: courses
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objectivo
+      description: O que o módulo deve fazer?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Escopo (API + UI + BD)
+      description: Endpoints, páginas e modelos Prisma previstos
+    validations:
+      required: true
+  - type: input
+    id: branch
+    attributes:
+      label: Branch proposta
+      placeholder: feature/grupo-academico-courses-crud
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Confirmações
+      options:
+        - label: Li docs/colaboracao-github.md e docs/modulos-por-grupo.md
+          required: true
+        - label: O módulo não duplica auth/users/audit do Core
+          required: true

@@ -1,0 +1,41 @@
+{
+  "name": "smart-campus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Campus Core — plataforma integrada UJAC / PTP III",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @smart-campus/api\" \"npm run dev -w @smart-campus/web\"",
+    "dev:api": "npm run dev -w @smart-campus/api",
+    "dev:web": "npm run dev -w @smart-campus/web",
+    "build": "npm run build -w @smart-campus/shared-types && npm run build -w @smart-campus/validation && npm run build -w @smart-campus/api-client && npm run build -w @smart-campus/api && npm run build -w @smart-campus/web",
+    "test": "npm run test -w @smart-campus/api && npm run test -w @smart-campus/web",
+    "test:api": "npm run test -w @smart-campus/api",
+    "test:web": "npm run test -w @smart-campus/web",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "lint": "npm run lint -w @smart-campus/api --if-present && npm run lint -w @smart-campus/web --if-present"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prisma": "^6.5.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "bcryptjs": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

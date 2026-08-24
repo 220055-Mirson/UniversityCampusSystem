@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Manual de colaboração GitHub
+    url: https://github.com/armandocorreia/UniversityCampusSystem/blob/main/docs/colaboracao-github.md
+    about: Forks, branches e pull requests para grupos PTP III
+  - name: Módulos por grupo
+    url: https://github.com/armandocorreia/UniversityCampusSystem/blob/main/docs/modulos-por-grupo.md
+    about: Mapa de módulos e branches sugeridas

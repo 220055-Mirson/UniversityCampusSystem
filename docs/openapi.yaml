@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: Smart Campus Core API
+  version: 1.0.0
+  description: |
+    API REST versionada do **Smart Campus Core** (UJAC / PTP III).
+
+    ## Como autenticar no Swagger
+    1. Execute `POST /auth/login` com um utilizador demo.
+    2. Copie `data.tokens.accessToken`.
+    3. Clique em **Authorize** e cole o token (ou `Bearer <token>`).
+    4. Teste os endpoints protegidos.
+
+    ## Credenciais demo
+    - ADMIN: `admin@smartcampus.demo` / `Admin123!`
+    - COORDINATOR: `coordenador@smartcampus.demo` / `Coord123!`
+    - TEACHER: `docente@smartcampus.demo` / `Docente123!`
+    - TECHNICIAN: `tecnico@smartcampus.demo` / `Tecnico123!`
+    - STUDENT: `estudante@smartcampus.demo` / `Estudante123!`
+
+    Manual completo: `docs/manual-apis-core.md`
+  contact:
+    name: Smart Campus Core / PTP III
+servers:
+  - url: http://localhost:4100/api/v1
+    description: Desenvolvimento local
+tags:
+  - name: Health
+    description: Saúde do serviço (ver também GET /health fora de /api/v1)
+  - name: Auth
+    description: Login, refresh e logout
+  - name: Users
+    description: Perfil e gestão de utilizadores
+  - name: Rooms
+    description: Edifícios e salas
+  - name: Incidents
+    description: Ocorrências e estados
+  - name: Dashboard
+    description: Indicadores agregados
+  - name: Audit
+    description: Eventos de auditoria
+  - name: IoT
+    description: Dispositivos, sensores e alertas
+  - name: Parking
+    description: Parque, vagas e LPR
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiError:
+      type: object
+      required: [code, message, details, correlationId]
+      properties:
+        code: { type: string, example: VALIDATION_ERROR }
+        message: { type: string, example: Dados inválidos }
+        details:
+          type: array
+          items: {}
+        correlationId: { type: string }
+    Meta:
+      type: object
+      properties:
+        correlationId: { type: string }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+    AuthUser:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        fullName: { type: string }
+        role:
+          type: string
+          enum: [STUDENT, TEACHER, TECHNICIAN, COORDINATOR, ADMIN]
+        isActive: { type: boolean }
+    AuthTokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: string, example: 15m }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: admin@smartcampus.demo }
+        password: { type: string, format: password, example: Admin123!, minLength: 8 }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken: { type: string }
+    CreateUserRequest:
+      type: object
+      required: [email, password, fullName, role]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, maxLength: 128 }
+        fullName: { type: string, minLength: 2, maxLength: 120 }
+        role:
+          type: string
+          enum: [STUDENT, TEACHER, TECHNICIAN, COORDINATOR, ADMIN]
+    CreateRoomRequest:
+      type: object
+      required: [code, name, capacity, buildingId]
+      properties:
+        code: { type: string, example: A-101 }
+        name: { type: string, example: Sala de Aula 101 }
+        capacity: { type: integer, minimum: 1, maximum: 1000, example: 40 }
+        floor: { type: integer, minimum: -5, maximum: 100, default: 0 }
+        status:
+          type: string
+          enum: [AVAILABLE, OCCUPIED, MAINTENANCE, RESERVED]
+        buildingId: { type: string }
+    RoomDto:
+      type: object
+      properties:
+        id: { type: string }
+        code: { type: string }
+        name: { type: string }
+        capacity: { type: integer }
+        floor: { type: integer }
+        status: { type: string }
+        building:
+          type: object
+          properties:
+            id: { type: string }
+            code: { type: string }
+            name: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateIncidentRequest:
+      type: object
+      required: [title, description]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 160, example: Projector sem imagem }
+        description: { type: string, minLength: 5, maxLength: 2000 }
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          default: MEDIUM
+        roomId: { type: string, nullable: true }
+        equipmentId: { type: string, nullable: true }
+    UpdateIncidentStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED]
+        notes: { type: string, maxLength: 1000 }
+        assigneeId: { type: string, nullable: true }
+    IncidentDto:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        roomId: { type: string, nullable: true }
+        reporterId: { type: string }
+        assigneeId: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreatePlateReadingRequest:
+      type: object
+      required: [lotId, plate, direction]
+      properties:
+        lotId: { type: string }
+        plate:
+          type: string
+          description: Matrícula MZ — AXX 123 MP|MC (começa por A) ou legado AAA 12 34
+          example: AIT 954 MC
+        direction:
+          type: string
+          enum: [IN, OUT]
+        sensorCode: { type: string, default: CAM-LPR-SIM }
+        confidence: { type: number, minimum: 0, maximum: 1, default: 0.9 }
+        photoUrl: { type: string, format: uri, nullable: true }
+        spotCode: { type: string, nullable: true }
+    UpdateParkingSpotRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [FREE, OCCUPIED, RESERVED, OUT_OF_SERVICE]
+        plate: { type: string, nullable: true }
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Autenticar utilizador
+      description: Devolve access JWT + refresh token. Não requer Authorization.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Login bem-sucedido
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Renovar tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshRequest' }
+      responses:
+        '200':
+          description: Tokens renovados
+        '401':
+          description: Refresh inválido ou expirado
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Terminar sessão
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LogoutRequest' }
+      responses:
+        '200':
+          description: Sessão terminada
+  /me:
+    get:
+      tags: [Users]
+      summary: Perfil do utilizador autenticado
+      responses:
+        '200':
+          description: Perfil AuthUser
+        '401':
+          description: Não autenticado
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar utilizadores
+      description: Roles ADMIN e COORDINATOR.
+      responses:
+        '200':
+          description: Lista de utilizadores
+        '403':
+          description: Sem permissão
+    post:
+      tags: [Users]
+      summary: Criar utilizador
+      description: Apenas ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserRequest' }
+      responses:
+        '201':
+          description: Utilizador criado
+        '403':
+          description: Sem permissão
+        '409':
+          description: Email já existe
+  /rooms:
+    get:
+      tags: [Rooms]
+      summary: Listar salas
+      responses:
+        '200':
+          description: Lista de salas
+    post:
+      tags: [Rooms]
+      summary: Criar sala
+      description: Roles ADMIN, COORDINATOR, TECHNICIAN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoomRequest' }
+      responses:
+        '201':
+          description: Sala criada
+  /rooms/{id}:
+    get:
+      tags: [Rooms]
+      summary: Obter sala
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Sala
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/RoomDto' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '404':
+          description: Não encontrada
+  /buildings:
+    get:
+      tags: [Rooms]
+      summary: Listar edifícios
+      responses:
+        '200':
+          description: Lista de edifícios
+  /incidents:
+    get:
+      tags: [Incidents]
+      summary: Listar ocorrências
+      responses:
+        '200':
+          description: Lista
+    post:
+      tags: [Incidents]
+      summary: Criar ocorrência
+      description: Qualquer utilizador autenticado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateIncidentRequest' }
+      responses:
+        '201':
+          description: Criada
+  /incidents/{id}/status:
+    patch:
+      tags: [Incidents]
+      summary: Actualizar estado da ocorrência
+      description: Roles TECHNICIAN, COORDINATOR, ADMIN.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateIncidentStatusRequest' }
+      responses:
+        '200':
+          description: Actualizada
+        '403':
+          description: Sem permissão
+        '404':
+          description: Ocorrência não encontrada
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Resumo do dashboard
+      responses:
+        '200':
+          description: Indicadores DashboardSummary
+  /audit-events:
+    get:
+      tags: [Audit]
+      summary: Eventos de auditoria
+      description: Roles ADMIN e COORDINATOR.
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        '200':
+          description: Lista de eventos
+        '403':
+          description: Sem permissão
+  /devices:
+    get:
+      tags: [IoT]
+      summary: Listar dispositivos
+      responses:
+        '200':
+          description: Dispositivos com sensores e sala
+  /sensors/{id}/readings:
+    get:
+      tags: [IoT]
+      summary: Leituras de um sensor
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Até 100 leituras (pode incluir isDemo)
+        '404':
+          description: Sensor não encontrado
+  /alerts:
+    get:
+      tags: [IoT]
+      summary: Listar alertas
+      responses:
+        '200':
+          description: Últimos alertas
+  /parking/overview:
+    get:
+      tags: [Parking]
+      summary: Resumo de parques e vagas
+      responses:
+        '200':
+          description: Overview de estacionamento
+  /parking/readings:
+    get:
+      tags: [Parking]
+      summary: Leituras de matrícula LPR
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 30, maximum: 100 }
+      responses:
+        '200':
+          description: Lista de leituras
+    post:
+      tags: [Parking]
+      summary: Registar leitura de matrícula (sensor/câmara)
+      description: |
+        Roles TECHNICIAN, COORDINATOR, ADMIN.
+        `IN` ocupa vaga livre; `OUT` liberta vaga com a matrícula.
+        Matrículas MZ modernizadas começam por **A** (ex. AIT 954 MC).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePlateReadingRequest' }
+      responses:
+        '201':
+          description: Leitura criada
+        '400':
+          description: Matrícula ou payload inválido
+        '403':
+          description: Sem permissão
+  /parking/spots/{id}:
+    patch:
+      tags: [Parking]
+      summary: Actualizar estado de vaga
+      description: Roles TECHNICIAN, COORDINATOR, ADMIN.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateParkingSpotRequest' }
+      responses:
+        '200':
+          description: Vaga actualizada
+        '404':
+          description: Vaga não encontrada

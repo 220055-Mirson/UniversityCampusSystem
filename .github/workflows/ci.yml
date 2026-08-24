@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: smartcampus
+          POSTGRES_PASSWORD: smartcampus
+          POSTGRES_DB: smart_campus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smartcampus -d smart_campus"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://smartcampus:smartcampus@localhost:5432/smart_campus?schema=public
+      JWT_ACCESS_SECRET: ci-access-secret-change-me-min-32-chars!!
+      JWT_REFRESH_SECRET: ci-refresh-secret-change-me-min-32-chars!
+      CORS_ORIGIN: http://localhost:5173
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: npm run db:generate
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npm run build -w @smart-campus/shared-types
+      - run: npm run build -w @smart-campus/validation
+      - run: npm run build -w @smart-campus/api-client
+      - run: npm test

@@ -1,0 +1,33 @@
+# Smart Campus Core — revisão por área
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default: coordenação / maintainer do repositório
+* @armandocorreia
+
+# Core transversal
+/apps/api/src/middleware/ @armandocorreia
+/apps/api/src/app.ts @armandocorreia
+/apps/api/src/modules/auth/ @armandocorreia
+/apps/api/src/modules/users/ @armandocorreia
+/apps/api/src/modules/audit/ @armandocorreia
+/packages/shared-types/ @armandocorreia
+/packages/validation/ @armandocorreia
+/packages/api-client/ @armandocorreia
+/prisma/schema.prisma @armandocorreia
+/docs/openapi.yaml @armandocorreia
+
+# Módulos Core já implementados
+/apps/api/src/modules/rooms/ @armandocorreia
+/apps/api/src/modules/incidents/ @armandocorreia
+/apps/api/src/modules/dashboard/ @armandocorreia
+/apps/api/src/modules/parking/ @armandocorreia
+/apps/api/src/modules/devices/ @armandocorreia
+
+# Infra e CI
+/.github/ @armandocorreia
+/docker-compose.yml @armandocorreia
+/Dockerfile @armandocorreia
+
+# Grupos futuros: descomentar e substituir @armandocorreia pelo @user ou @org/team do grupo
+# /apps/api/src/modules/courses/ @grupo-academico
+# /apps/web/src/pages/CoursesPage.tsx @grupo-academico
