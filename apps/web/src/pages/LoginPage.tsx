@@ -20,7 +20,13 @@ export function LoginPage() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : 'Falha no login');
+      if (err instanceof ApiClientError) {
+        setError(err.message);
+      } else if (err instanceof TypeError) {
+        setError('API indisponível. Abra /health da API, aguarde ~60s (cold start) e tente de novo.');
+      } else {
+        setError('Falha no login');
+      }
     } finally {
       setSubmitting(false);
     }

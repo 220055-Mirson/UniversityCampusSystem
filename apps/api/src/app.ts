@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 import { loadEnv } from './config/env.js';
+import { createCorsOrigin } from './config/cors.js';
 import { logger } from './lib/logger.js';
 import { correlationIdMiddleware } from './middleware/correlationId.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -28,7 +29,7 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN.split(',').map((o) => o.trim()),
+      origin: createCorsOrigin(env),
       credentials: true,
     }),
   );
