@@ -12,21 +12,25 @@
 smart-campus, ujac, ptp3, typescript, react, express, prisma, postgresql, monorepo, education
 ```
 
-## 2. Branch protection — `main`
+## 2. Branch protection — `main` ✅ CONFIGURADO
 
-**Settings → Branches → Add rule → Branch name pattern: `main`**
+> Estado actual (Agosto 2026): repositório **público** — necessário no plano Free para activar protecção de branches.
 
-| Opção | Recomendação |
+**Settings → Branches → regra em `main`**
+
+| Opção | Valor aplicado |
 | --- | --- |
 | Require a pull request before merging | ✅ |
-| Require approvals | 1 (docente/coordenação) |
+| Required approving reviews | **1** |
 | Dismiss stale pull request approvals | ✅ |
-| Require status checks to pass | ✅ CI / `build-test` |
-| Require branches to be up to date | ✅ |
-| Do not allow bypassing | ✅ (excepto admins se necessário) |
-| Restrict who can push | Maintainers only |
+| Require status checks to pass | ✅ **`build-test`** (CI) |
+| Require branches to be up to date | ✅ (strict) |
+| Require conversation resolution | ✅ |
 | Allow force pushes | ❌ |
 | Allow deletions | ❌ |
+| Delete branch on merge | ✅ (repo setting) |
+
+Para alterar: GitHub → **Settings → Branches** ou `gh api repos/armandocorreia/UniversityCampusSystem/branches/main/protection`.
 
 ## 3. Permissões de fork
 
