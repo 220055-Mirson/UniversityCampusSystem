@@ -19,4 +19,6 @@ npm run build -w @smart-campus/shared-types
 npm run build -w @smart-campus/validation
 npm run build -w @smart-campus/api
 
+cp docs/openapi.yaml apps/api/openapi.yaml
+
 echo "API build OK"

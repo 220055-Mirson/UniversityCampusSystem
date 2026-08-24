@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -66,16 +67,19 @@ export function createApp() {
   });
 
   try {
+    const moduleDir = dirname(fileURLToPath(import.meta.url));
     const candidates = [
       join(process.cwd(), 'docs/openapi.yaml'),
-      join(process.cwd(), '../../docs/openapi.yaml'),
+      join(moduleDir, '../../../docs/openapi.yaml'),
+      join(process.cwd(), 'apps/api/openapi.yaml'),
     ];
     const openapiPath = candidates.find((p) => existsSync(p));
     if (openapiPath) {
       const openapi = YAML.parse(readFileSync(openapiPath, 'utf8'));
+      app.get('/api/docs', (_req, res) => res.redirect(301, '/api/docs/'));
       app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi));
     } else {
-      logger.warn('OpenAPI não encontrado');
+      logger.warn('OpenAPI não encontrado', { cwd: process.cwd(), moduleDir });
     }
   } catch (err) {
     logger.warn('OpenAPI não carregado', { error: err instanceof Error ? err.message : 'unknown' });
