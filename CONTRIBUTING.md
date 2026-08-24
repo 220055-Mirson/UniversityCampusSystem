@@ -4,11 +4,14 @@
 
 ## Para grupos de estudantes (PTP III)
 
-Leia primeiro:
+**Guia principal (passo a passo completo):** **[guia-contribuicao-grupos.md](docs/guia-contribuicao-grupos.md)**
 
-1. **[Colaboração no GitHub](docs/colaboracao-github.md)** — forks, upstream, branches, PRs  
+Leia também:
+
+1. **[Guia de contribuição para grupos](docs/guia-contribuicao-grupos.md)** — fork, clone, setup na máquina, branch, PR  
 2. **[Módulos por grupo](docs/modulos-por-grupo.md)** — qual módulo desenvolver  
 3. **[Integração de módulos](docs/integration-guide.md)** — padrão técnico API/UI  
+4. **[Colaboração GitHub](docs/colaboracao-github.md)** — regras e governança (detalhe)
 
 ### Resumo do fluxo
 

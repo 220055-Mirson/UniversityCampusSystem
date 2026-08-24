@@ -3,7 +3,8 @@
 > Repositório oficial: **https://github.com/armandocorreia/UniversityCampusSystem**  
 > Clone SSH: `git@github.com:armandocorreia/UniversityCampusSystem.git`
 
-Este guia define como **grupos de estudantes** devem trabalhar em módulos futuros usando **forks** e **branches**, sem quebrar o Core partilhado.
+> **Grupos de estudantes:** comecem pelo **[Guia de contribuição para grupos](./guia-contribuicao-grupos.md)** (fork, clone, setup local, PR passo a passo).  
+> Este documento complementa com regras técnicas e governança.
 
 ---
 

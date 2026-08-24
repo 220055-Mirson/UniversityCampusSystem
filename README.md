@@ -91,17 +91,14 @@ Repositório oficial: **https://github.com/armandocorreia/UniversityCampusSystem
 
 | Guia | Descrição |
 | --- | --- |
-| [Colaboração GitHub](docs/colaboracao-github.md) | Forks, branches, PRs, protecção de `main` |
+| **[Guia de contribuição para grupos](docs/guia-contribuicao-grupos.md)** | **Começar aqui** — fork, clone, setup local, branch, PR |
+| [Colaboração GitHub](docs/colaboracao-github.md) | Regras técnicas e governança do repositório |
 | [Módulos por grupo](docs/modulos-por-grupo.md) | Mapa de módulos e branches sugeridas |
 | [Contribuição](CONTRIBUTING.md) | Commits, PRs, definição de pronto |
 
 ### Início rápido para um grupo
 
-```bash
-# Fork no GitHub, depois:
-git clone git@github.com:<SUA-CONTA>/UniversityCampusSystem.git
-cd UniversityCampusSystem
-git remote add upstream git@github.com:armandocorreia/UniversityCampusSystem.git
-git fetch upstream && git checkout main && git merge upstream/main
-git checkout -b feature/grupo-academico-<modulo>-<objectivo>
-```
+1. **Fork** em https://github.com/armandocorreia/UniversityCampusSystem  
+2. **Clone** do fork → ver [guia-contribuicao-grupos.md](docs/guia-contribuicao-grupos.md)  
+3. Instalar e correr (`npm install`, Docker, `npm run dev`)  
+4. Branch `feature/grupo-<area>-<modulo>-<obj>` → PR para `main`
