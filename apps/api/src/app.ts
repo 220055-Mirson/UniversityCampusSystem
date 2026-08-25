@@ -26,7 +26,18 @@ export function createApp() {
   const app = express();
 
   app.set('trust proxy', 1);
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+        },
+      },
+    }),
+  );
   app.use(
     cors({
       origin: createCorsOrigin(env),
@@ -86,7 +97,6 @@ export function createApp() {
     const openapiPath = candidates.find((p) => existsSync(p));
     if (openapiPath) {
       const openapi = YAML.parse(readFileSync(openapiPath, 'utf8'));
-      app.get('/api/docs', (_req, res) => res.redirect(301, '/api/docs/'));
       app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi));
     } else {
       logger.warn('OpenAPI não encontrado', { cwd: process.cwd(), moduleDir });
