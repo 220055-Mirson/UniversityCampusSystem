@@ -1,6 +1,6 @@
 # Configuração recomendada do repositório GitHub
 
-> Para a coordenação / maintainer: **armandocorreia/UniversityCampusSystem**
+> Para a coordenação / maintainer: **acorreialabs/UniversityCampusSystem**
 
 ## 1. Descrição e topics
 
@@ -30,7 +30,7 @@ smart-campus, ujac, ptp3, typescript, react, express, prisma, postgresql, monore
 | Allow deletions | ❌ |
 | Delete branch on merge | ✅ (repo setting) |
 
-Para alterar: GitHub → **Settings → Branches** ou `gh api repos/armandocorreia/UniversityCampusSystem/branches/main/protection`.
+Para alterar: GitHub → **Settings → Branches** ou `gh api repos/acorreialabs/UniversityCampusSystem/branches/main/protection`.
 
 ## 3. Permissões de fork
 
@@ -83,7 +83,7 @@ Actualizar `.github/CODEOWNERS` com `@ujac/grupo-academico` nos paths do módulo
 ## 7. Primeiro push (já feito pelo maintainer)
 
 ```bash
-git remote add origin git@github.com:armandocorreia/UniversityCampusSystem.git
+git remote add origin git@github.com:acorreialabs/UniversityCampusSystem.git
 git push -u origin main
 ```
 

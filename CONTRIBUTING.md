@@ -1,6 +1,6 @@
 # Guia de contribuição — Smart Campus Core
 
-> Repositório: https://github.com/armandocorreia/UniversityCampusSystem
+> Repositório: https://github.com/acorreialabs/UniversityCampusSystem
 
 ## Para grupos de estudantes (PTP III)
 
@@ -21,7 +21,7 @@ git clone git@github.com:<SUA-CONTA>/UniversityCampusSystem.git
 cd UniversityCampusSystem
 
 # 2. Upstream
-git remote add upstream git@github.com:armandocorreia/UniversityCampusSystem.git
+git remote add upstream git@github.com:acorreialabs/UniversityCampusSystem.git
 git fetch upstream && git checkout main && git merge upstream/main
 
 # 3. Branch do grupo

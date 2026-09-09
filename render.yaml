@@ -3,7 +3,7 @@
 # Deploy unificado: API + frontend no MESMO serviço (evita CORS entre domínios Render).
 # URL único: https://smart-campus-api-XXXX.onrender.com/login
 #
-# Deploy: https://render.com/deploy?repo=https://github.com/armandocorreia/UniversityCampusSystem
+# Deploy: https://render.com/deploy?repo=https://github.com/acorreialabs/UniversityCampusSystem
 # Setup BD: npm run provision:deploy (Neon) → colar DATABASE_URL no Render.
 
 services:

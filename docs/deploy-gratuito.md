@@ -2,7 +2,7 @@
 
 > **Stack recomendada:** [Neon](https://neon.tech) (PostgreSQL) + [Render](https://render.com) (API + frontend estático)  
 > **Custo:** 0 € no plano free (com limitações descritas abaixo)  
-> **Repositório:** https://github.com/armandocorreia/UniversityCampusSystem
+> **Repositório:** https://github.com/acorreialabs/UniversityCampusSystem
 
 Este guia publica o sistema a partir do GitHub sem servidor próprio. O repositório inclui um **Blueprint Render** (`render.yaml`) que cria automaticamente a API e o frontend.
 
@@ -10,7 +10,7 @@ Este guia publica o sistema a partir do GitHub sem servidor próprio. O reposit�
 
 ## 0. Setup automático (recomendado)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/armandocorreia/UniversityCampusSystem)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/acorreialabs/UniversityCampusSystem)
 
 ### Comando único (Neon + migrações + seed)
 
@@ -309,7 +309,7 @@ VITE_API_BASE_URL=http://localhost:4100/api/v1 bash .scripts/render-build-web.sh
 Para correr `docker compose up` numa VM (ex.: Oracle Cloud Always Free):
 
 ```bash
-git clone https://github.com/armandocorreia/UniversityCampusSystem.git
+git clone https://github.com/acorreialabs/UniversityCampusSystem.git
 cd UniversityCampusSystem
 cp .env.example .env
 # Editar .env: DATABASE_URL (Neon ou Postgres local), JWT, CORS_ORIGIN

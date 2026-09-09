@@ -2,32 +2,32 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default: coordenação / maintainer do repositório
-* @armandocorreia
+* @acorreialabs
 
 # Core transversal
-/apps/api/src/middleware/ @armandocorreia
-/apps/api/src/app.ts @armandocorreia
-/apps/api/src/modules/auth/ @armandocorreia
-/apps/api/src/modules/users/ @armandocorreia
-/apps/api/src/modules/audit/ @armandocorreia
-/packages/shared-types/ @armandocorreia
-/packages/validation/ @armandocorreia
-/packages/api-client/ @armandocorreia
-/prisma/schema.prisma @armandocorreia
-/docs/openapi.yaml @armandocorreia
+/apps/api/src/middleware/ @acorreialabs
+/apps/api/src/app.ts @acorreialabs
+/apps/api/src/modules/auth/ @acorreialabs
+/apps/api/src/modules/users/ @acorreialabs
+/apps/api/src/modules/audit/ @acorreialabs
+/packages/shared-types/ @acorreialabs
+/packages/validation/ @acorreialabs
+/packages/api-client/ @acorreialabs
+/prisma/schema.prisma @acorreialabs
+/docs/openapi.yaml @acorreialabs
 
 # Módulos Core já implementados
-/apps/api/src/modules/rooms/ @armandocorreia
-/apps/api/src/modules/incidents/ @armandocorreia
-/apps/api/src/modules/dashboard/ @armandocorreia
-/apps/api/src/modules/parking/ @armandocorreia
-/apps/api/src/modules/devices/ @armandocorreia
+/apps/api/src/modules/rooms/ @acorreialabs
+/apps/api/src/modules/incidents/ @acorreialabs
+/apps/api/src/modules/dashboard/ @acorreialabs
+/apps/api/src/modules/parking/ @acorreialabs
+/apps/api/src/modules/devices/ @acorreialabs
 
 # Infra e CI
-/.github/ @armandocorreia
-/docker-compose.yml @armandocorreia
-/Dockerfile @armandocorreia
+/.github/ @acorreialabs
+/docker-compose.yml @acorreialabs
+/Dockerfile @acorreialabs
 
-# Grupos futuros: descomentar e substituir @armandocorreia pelo @user ou @org/team do grupo
+# Grupos futuros: descomentar e substituir @acorreialabs pelo @user ou @org/team do grupo
 # /apps/api/src/modules/courses/ @grupo-academico
 # /apps/web/src/pages/CoursesPage.tsx @grupo-academico

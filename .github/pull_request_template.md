@@ -55,4 +55,4 @@
 ## Checklist fork/upstream
 
 - [ ] Branch sincronizada com `upstream/main` (ou `main` actual)
-- [ ] PR aponta para `armandocorreia/UniversityCampusSystem` → `main`
+- [ ] PR aponta para `acorreialabs/UniversityCampusSystem` → `main`

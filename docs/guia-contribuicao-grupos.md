@@ -1,7 +1,7 @@
 # Guia de contribuição para grupos — Smart Campus Core
 
 > **Para quem:** Grupos de estudantes da PTP III (UJAC)  
-> **Repositório oficial (upstream):** https://github.com/armandocorreia/UniversityCampusSystem  
+> **Repositório oficial (upstream):** https://github.com/acorreialabs/UniversityCampusSystem  
 > **Versão:** 1.0 — Agosto 2026
 
 Este documento explica **passo a passo**, desde zero, como:
@@ -71,7 +71,7 @@ Leiam também: [modulos-por-grupo.md](./modulos-por-grupo.md) (qual módulo é d
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │  GitHub — repositório OFICIAL (upstream)                    │
-│  armandocorreia/UniversityCampusSystem                      │
+│  acorreialabs/UniversityCampusSystem                        │
 │  branch: main  ← Core estável, protegida                    │
 └───────────────────────────▲─────────────────────────────────┘
                             │
@@ -124,7 +124,7 @@ Se o repositório for privado e não tiverem acesso, peçam ao docente o convite
 
 O **fork** é feito **no site do GitHub**, não no terminal.
 
-1. Abrir: https://github.com/armandocorreia/UniversityCampusSystem  
+1. Abrir: https://github.com/acorreialabs/UniversityCampusSystem  
 2. Clicar no botão **Fork** (canto superior direito)  
 3. Escolher **a vossa conta** como destino  
 4. Manter o nome `UniversityCampusSystem`  
@@ -192,13 +192,13 @@ origin  git@github.com:<VOSA-CONTA>/UniversityCampusSystem.git (push)
 Isto permite **actualizar** o vosso fork quando o Core oficial muda.
 
 ```bash
-git remote add upstream git@github.com:armandocorreia/UniversityCampusSystem.git
+git remote add upstream git@github.com:acorreialabs/UniversityCampusSystem.git
 ```
 
 (Se preferirem HTTPS:)
 
 ```bash
-git remote add upstream https://github.com/armandocorreia/UniversityCampusSystem.git
+git remote add upstream https://github.com/acorreialabs/UniversityCampusSystem.git
 ```
 
 Confirmar:
@@ -211,7 +211,7 @@ Resultado esperado:
 
 ```text
 origin    → vosso fork
-upstream  → repo oficial (armandocorreia)
+upstream  → repo oficial (acorreialabs)
 ```
 
 Sincronizar pela primeira vez:
@@ -460,7 +460,7 @@ O código fica no **vosso fork**, na branch de feature — **ainda não** entrou
 1. Ir ao **vosso fork** no GitHub  
 2. Aparece banner **Compare & pull request** — clicar  
    - Ou: repo oficial → **Pull requests** → **New pull request**  
-   - **base:** `armandocorreia/UniversityCampusSystem` → `main`  
+   - **base:** `acorreialabs/UniversityCampusSystem` → `main`  
    - **compare:** `<vossa-conta>/UniversityCampusSystem` → `feature/grupo-...`  
 
 3. **Título** (exemplo):
@@ -628,7 +628,7 @@ git push
 # 1. Fork no GitHub (browser) → depois:
 git clone git@github.com:<VOSA-CONTA>/UniversityCampusSystem.git
 cd UniversityCampusSystem
-git remote add upstream git@github.com:armandocorreia/UniversityCampusSystem.git
+git remote add upstream git@github.com:acorreialabs/UniversityCampusSystem.git
 
 # 2. Setup local
 cp .env.example .env && npm install

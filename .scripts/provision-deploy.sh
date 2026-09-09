@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DEPLOY_ENV_FILE="${DEPLOY_ENV_FILE:-.env.deploy}"
-REPO_URL="${REPO_URL:-https://github.com/armandocorreia/UniversityCampusSystem}"
+REPO_URL="${REPO_URL:-https://github.com/acorreialabs/UniversityCampusSystem}"
 RENDER_DEPLOY_URL="https://render.com/deploy?repo=${REPO_URL}"
 
 if [[ ! -f "$DEPLOY_ENV_FILE" ]]; then

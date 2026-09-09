@@ -1,7 +1,7 @@
 # Colaboração no GitHub — Smart Campus Core
 
-> Repositório oficial: **https://github.com/armandocorreia/UniversityCampusSystem**  
-> Clone SSH: `git@github.com:armandocorreia/UniversityCampusSystem.git`
+> Repositório oficial: **https://github.com/acorreialabs/UniversityCampusSystem**  
+> Clone SSH: `git@github.com:acorreialabs/UniversityCampusSystem.git`
 
 > **Grupos de estudantes:** comecem pelo **[Guia de contribuição para grupos](./guia-contribuicao-grupos.md)** (fork, clone, setup local, PR passo a passo).  
 > Este documento complementa com regras técnicas e governança.
@@ -11,7 +11,7 @@
 ## 1. Modelo de repositório
 
 ```text
-armandocorreia/UniversityCampusSystem   ← upstream (oficial, Core estável)
+acorreialabs/UniversityCampusSystem   ← upstream (oficial, Core estável)
         ↑
         │ Pull Request
         │
@@ -87,7 +87,7 @@ hotfix/<descricao>        ex.: hotfix/auth-token-expiry
 
 ### Passo 1 — Fork no GitHub
 
-1. Abrir https://github.com/armandocorreia/UniversityCampusSystem  
+1. Abrir https://github.com/acorreialabs/UniversityCampusSystem  
 2. Clicar **Fork** → criar fork na conta do grupo ou líder  
 3. Opcional: adicionar colegas como colaboradores **no fork**
 
@@ -101,7 +101,7 @@ cd UniversityCampusSystem
 ### Passo 3 — Configurar upstream
 
 ```bash
-git remote add upstream git@github.com:armandocorreia/UniversityCampusSystem.git
+git remote add upstream git@github.com:acorreialabs/UniversityCampusSystem.git
 git remote -v
 # origin    → seu fork
 # upstream  → repositório oficial
@@ -147,7 +147,7 @@ git push -u origin feature/grupo-academico-courses-crud
 
 ### Passo 8 — Pull Request para upstream
 
-1. No GitHub, abrir PR: **fork → `armandocorreia/UniversityCampusSystem` `main`**  
+1. No GitHub, abrir PR: **fork → `acorreialabs/UniversityCampusSystem` `main`**  
 2. Preencher o template de PR  
 3. Marcar módulo e grupo no título, ex.:  
    `[Grupo Académico] feat: CRUD de cursos`  
@@ -170,7 +170,7 @@ git push origin feature/grupo-academico-courses-crud
 Se a coordenação adicionar o grupo como **collaborator** no repositório oficial:
 
 ```bash
-git clone git@github.com:armandocorreia/UniversityCampusSystem.git
+git clone git@github.com:acorreialabs/UniversityCampusSystem.git
 cd UniversityCampusSystem
 git checkout -b feature/grupo-iot-sensors-api
 # ... desenvolver ...

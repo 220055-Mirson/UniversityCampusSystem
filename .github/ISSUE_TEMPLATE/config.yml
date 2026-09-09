@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Guia de contribuição para grupos (PTP III)
-    url: https://github.com/armandocorreia/UniversityCampusSystem/blob/main/docs/guia-contribuicao-grupos.md
+    url: https://github.com/acorreialabs/UniversityCampusSystem/blob/main/docs/guia-contribuicao-grupos.md
     about: Fork, clone, setup local, branch e Pull Request — começar aqui
   - name: Módulos por grupo
-    url: https://github.com/armandocorreia/UniversityCampusSystem/blob/main/docs/modulos-por-grupo.md
+    url: https://github.com/acorreialabs/UniversityCampusSystem/blob/main/docs/modulos-por-grupo.md
     about: Mapa de módulos e branches sugeridas
   - name: Manual de colaboração GitHub
-    url: https://github.com/armandocorreia/UniversityCampusSystem/blob/main/docs/colaboracao-github.md
+    url: https://github.com/acorreialabs/UniversityCampusSystem/blob/main/docs/colaboracao-github.md
     about: Regras técnicas e governança do repositório

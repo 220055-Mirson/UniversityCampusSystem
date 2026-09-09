@@ -61,7 +61,7 @@ docker compose up --build
 
 ## Deploy gratuito (GitHub → Internet)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/armandocorreia/UniversityCampusSystem)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/acorreialabs/UniversityCampusSystem)
 
 Publicar online **sem custo** com PostgreSQL [Neon](https://neon.tech) + API e frontend [Render](https://render.com):
 
@@ -104,7 +104,7 @@ Guia completo: **[docs/deploy-gratuito.md](docs/deploy-gratuito.md)** · Bluepri
 
 ## Colaboração no GitHub (grupos PTP III)
 
-Repositório oficial: **https://github.com/armandocorreia/UniversityCampusSystem**
+Repositório oficial: **https://github.com/acorreialabs/UniversityCampusSystem**
 
 | Guia | Descrição |
 | --- | --- |
@@ -115,7 +115,7 @@ Repositório oficial: **https://github.com/armandocorreia/UniversityCampusSystem
 
 ### Início rápido para um grupo
 
-1. **Fork** em https://github.com/armandocorreia/UniversityCampusSystem  
+1. **Fork** em https://github.com/acorreialabs/UniversityCampusSystem  
 2. **Clone** do fork → ver [guia-contribuicao-grupos.md](docs/guia-contribuicao-grupos.md)  
 3. Instalar e correr (`npm install`, Docker, `npm run dev`)  
 4. Branch `feature/grupo-<area>-<modulo>-<obj>` → PR para `main`
