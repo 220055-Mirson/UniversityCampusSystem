@@ -146,10 +146,12 @@ export const setSubjectRulesSchema = z
   .object({
     requiredTestCount: z.number().int().min(1).max(20).nullable().optional(),
     recurrenceMinAdmission: z.number().min(0).max(20).nullable().optional(),
+    exemptionMinGrade: z.number().min(0).max(20).nullable().optional(),
   })
-  .refine((v) => v.requiredTestCount !== undefined || v.recurrenceMinAdmission !== undefined, {
-    message: 'Indique requiredTestCount e/ou recurrenceMinAdmission',
-  });
+  .refine(
+    (v) => v.requiredTestCount !== undefined || v.recurrenceMinAdmission !== undefined || v.exemptionMinGrade !== undefined,
+    { message: 'Indique requiredTestCount, recurrenceMinAdmission e/ou exemptionMinGrade' },
+  );
 
 export const publishResultsSchema = z.object({
   published: z.boolean(),
