@@ -405,6 +405,8 @@ export type AssessmentSubjectRules = {
   requiredTestCount: number | null;
   /** Nota mínima de admissão (0–20) para recorrer; null = regra não configurada. */
   recurrenceMinAdmission: number | null;
+  /** Nota mínima (0–20) de admissão definida pelo docente para dispensa; null = regra institucional (>= 14). */
+  exemptionMinGrade: number | null;
   /** false quando a instituição ainda não definiu os critérios de recorrência. */
   rulesConfigured: boolean;
   /** Pauta publicada (bloqueia alterações até ser reaberta). */

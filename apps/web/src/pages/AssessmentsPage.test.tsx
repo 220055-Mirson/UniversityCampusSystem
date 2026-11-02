@@ -144,6 +144,7 @@ const sampleBoard: SubjectBoard = {
     subjectName: 'Projeto',
     requiredTestCount: 2,
     recurrenceMinAdmission: 7,
+    exemptionMinGrade: null,
     rulesConfigured: true,
     published: false,
     publishedAt: null,
@@ -573,6 +574,7 @@ describe('AssessmentsPage', () => {
       expect(api.setSubjectRules).toHaveBeenCalledWith('subject-1', {
         requiredTestCount: 2,
         recurrenceMinAdmission: 12,
+        exemptionMinGrade: null,
       }),
     );
     expect(await screen.findByText('Regras da disciplina guardadas.')).toBeInTheDocument();

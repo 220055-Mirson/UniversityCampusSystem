@@ -154,6 +154,9 @@ model Subject {
   // Nota mínima de admissão (0–20) para o estudante poder recorrer.
   // null = regra institucional não configurada (sinalizado na API e bloqueia publicação).
   recurrenceMinAdmission  Float?
+  // Nota mínima (0–20) de admissão definida pelo docente para o estudante ser
+  // dispensado na disciplina; null = sem mínimo extra (regra institucional >= 14).
+  exemptionMinGrade       Float?
   // Estado de publicação da pauta da disciplina. Enquanto publicada, as
   // notas não podem ser alteradas (reabertura explícita e auditada).
   resultsPublishedAt      DateTime?
@@ -683,6 +686,10 @@ model Grade {
   student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
   value        Float
   valuePercent Float
+  // Histórico imutável: true quando o estudante tirou uma negativa (nota <
+  // 50%) nesta avaliação, mesmo que depois a nota seja corrigida. Basta uma
+  // negativa registada para vedar a dispensa na disciplina.
+  everNegative Boolean @default(false)
   comment      String?
   gradedById   String
   gradedBy     User           @relation("GradeAuthor", fields: [gradedById], references: [id])
