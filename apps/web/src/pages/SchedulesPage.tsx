@@ -3,6 +3,8 @@ import type { ScheduleDto, ScheduleFiltersInput, ScheduleOptions } from '@smart-
 import { useAuth } from '../lib/auth';
 import { printDocument } from '../lib/print';
 import { PageIntro } from '../components/PageIntro';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { IconActionButton, PencilIcon, TrashIcon } from '../components/ActionButtons';
 
 const MANAGE_ROLES = ['COORDINATOR', 'ADMIN'];
 
@@ -71,6 +73,8 @@ export function SchedulesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [filters, setFilters] = useState({ courseId: '', teacherId: '', roomId: '', from: '', to: '' });
   const [reloadKey, setReloadKey] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<ScheduleDto | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const canManage = Boolean(user && MANAGE_ROLES.includes(user.role));
 
@@ -227,16 +231,20 @@ export function SchedulesPage() {
   }
 
   async function onDelete(schedule: ScheduleDto) {
-    if (!window.confirm(`Eliminar o horário "${schedule.title}"?`)) return;
+    setDeletingId(schedule.id);
     setError(null);
     setNotice(null);
     try {
       await api.deleteSchedule(schedule.id);
       setNotice('O horário foi eliminado com sucesso.');
       if (form.id === schedule.id) cancelEdit();
+      setPendingDelete(null);
       reload();
     } catch (err) {
       setError(describeError(err, 'Não foi possível eliminar o horário. Tenta novamente.'));
+      setPendingDelete(null);
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -478,16 +486,23 @@ export function SchedulesPage() {
                       {canManage ? (
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
-                            <button type="button" className="btn-secondary !px-3 !py-1.5" onClick={() => startEdit(schedule)}>
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-secondary !px-3 !py-1.5 !text-red-700"
-                              onClick={() => void onDelete(schedule)}
-                            >
-                              Eliminar
-                            </button>
+                            <IconActionButton
+                              label="Editar"
+                              icon={<PencilIcon />}
+                              title="Editar sessão de horário"
+                              disabled={deletingId !== null}
+                              busy={false}
+                              onClick={() => startEdit(schedule)}
+                            />
+                            <IconActionButton
+                              label="Eliminar"
+                              danger
+                              icon={<TrashIcon />}
+                              title={`Eliminar "${schedule.title}"`}
+                              disabled={deletingId !== null}
+                              busy={deletingId === schedule.id}
+                              onClick={() => setPendingDelete(schedule)}
+                            />
                           </div>
                         </td>
                       ) : null}
@@ -499,6 +514,27 @@ export function SchedulesPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Eliminar horário"
+        description={
+          pendingDelete
+            ? `Eliminar a sessão "${pendingDelete.title}"? Esta eliminação é permanente.`
+            : undefined
+        }
+        confirmLabel="Eliminar"
+        busy={deletingId === pendingDelete?.id}
+        onCancel={() => {
+          if (deletingId === null) setPendingDelete(null);
+        }}
+        onConfirm={() => {
+          if (pendingDelete) {
+            setDeletingId(pendingDelete.id);
+            void onDelete(pendingDelete);
+          }
+        }}
+      />
     </div>
   );
 }

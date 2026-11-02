@@ -16,6 +16,8 @@ import { printDocument } from '../lib/print';
 import { STATE_LABELS, RECURRENCE_LEGEND, stateBadgeClass } from '../lib/academic';
 import { PageIntro } from '../components/PageIntro';
 import { SubjectBoardPanel, type BoardMode } from '../components/SubjectBoardPanel';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { IconActionButton, PencilIcon, TrashIcon } from '../components/ActionButtons';
 
 const STAFF_ROLES: RoleCode[] = ['TEACHER', 'COORDINATOR', 'ADMIN'];
 
@@ -158,6 +160,32 @@ function StaffAssessments() {
   const [rosterLoading, setRosterLoading] = useState(false);
   const [rosterError, setRosterError] = useState<string | null>(null);
   const [savingGrades, setSavingGrades] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<AssessmentDto | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  function hasGrades(a: AssessmentDto): boolean {
+    return a.hasGrades || (a.gradesCount ?? 0) > 0;
+  }
+
+  async function onDelete(a: AssessmentDto) {
+    setDeletingId(a.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await api.deleteAssessment(a.id);
+      setNotice(`A avaliação "${a.title}" foi eliminada com sucesso.`);
+      if (editingId === a.id) resetForm();
+      setPendingDelete(null);
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      setError(
+        describeError(err, `Não foi possível eliminar "${a.title}". Se já tem notas, a eliminação é recusada.`),
+      );
+      setPendingDelete(null);
+    } finally {
+      setDeletingId(null);
+    }
+  }
   const [creating, setCreating] = useState(false);
 
   const [tab, setTab] = useState<StaffTab>('avaliacoes');
@@ -383,9 +411,9 @@ function StaffAssessments() {
 
     try {
       await api.upsertGrades(selected.id, { grades: payload });
-      setNotice('Notas guardadas com sucesso.');
       await openRoster(selected);
       setReloadKey((key) => key + 1);
+      setNotice('Notas lançadas com sucesso.');
     } catch (err) {
       setRosterError(describeError(err, 'Não foi possível guardar as notas.'));
     } finally {
@@ -682,42 +710,56 @@ function StaffAssessments() {
               </tr>
             </thead>
             <tbody>
-              {assessments.map((assessment) => (
-                <tr key={assessment.id} className="border-t border-campus-line/70">
-                  <td className="px-4 py-3 font-medium">{assessment.title}</td>
-                  <td className="px-4 py-3">{assessment.subject?.name ?? assessment.subject?.code ?? '—'}</td>
-                  <td className="px-4 py-3">{TYPE_LABELS[assessment.type]}</td>
-                  <td className="px-4 py-3">{GRADING_LABELS[assessment.gradingMode]}</td>
-                  <td className="px-4 py-3">{assessment.weight}</td>
-                  <td className="px-4 py-3">{assessment.date ? dateFormatter.format(new Date(assessment.date)) : '—'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <button type="button" className="btn-secondary !px-3 !py-1.5" onClick={() => void openRoster(assessment)}>
-                        Lançar notas
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-secondary !px-3 !py-1.5"
-                        disabled={assessment.hasGrades || (assessment.gradesCount ?? 0) > 0}
-                        title={
-                          assessment.hasGrades || (assessment.gradesCount ?? 0) > 0
-                            ? 'Não é possível editar: já existem notas lançadas para esta avaliação.'
-                            : 'Editar avaliação'
-                        }
-                        onClick={() => {
-                          if (assessment.hasGrades || (assessment.gradesCount ?? 0) > 0) {
-                            setNotice('Não é possível editar esta avaliação porque já foram lançadas notas.');
-                            return;
+              {assessments.map((assessment) => {
+                return (
+                  <tr key={assessment.id} className="border-t border-campus-line/70">
+                    <td className="px-4 py-3 font-medium">{assessment.title}</td>
+                    <td className="px-4 py-3">{assessment.subject?.name ?? assessment.subject?.code ?? '—'}</td>
+                    <td className="px-4 py-3">{TYPE_LABELS[assessment.type]}</td>
+                    <td className="px-4 py-3">{GRADING_LABELS[assessment.gradingMode]}</td>
+                    <td className="px-4 py-3">{assessment.weight}</td>
+                    <td className="px-4 py-3">{assessment.date ? dateFormatter.format(new Date(assessment.date)) : '—'}</td>
+                    <td className="px-4 py-3">—</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button type="button" className="btn-secondary !px-3 !py-1.5" onClick={() => void openRoster(assessment)}>
+                          Lançar notas
+                        </button>
+                        <IconActionButton
+                          label="Editar"
+                          icon={<PencilIcon />}
+                          title={
+                            hasGrades(assessment)
+                              ? 'Não é possível editar: já existem notas lançadas para esta avaliação.'
+                              : 'Editar avaliação'
                           }
-                          startEdit(assessment);
-                        }}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                          disabled={hasGrades(assessment) || deletingId !== null}
+                          onClick={() => {
+                            if (hasGrades(assessment)) {
+                              setNotice('Não é possível editar esta avaliação porque já foram lançadas notas.');
+                              return;
+                            }
+                            startEdit(assessment);
+                          }}
+                        />
+                        <IconActionButton
+                          label="Eliminar"
+                          danger
+                          icon={<TrashIcon />}
+                          title={
+                            hasGrades(assessment)
+                              ? 'Não é possível eliminar: já existem notas lançadas para esta avaliação.'
+                              : 'Eliminar avaliação'
+                          }
+                          disabled={hasGrades(assessment) || deletingId !== null}
+                          busy={deletingId !== null}
+                          onClick={() => setPendingDelete(assessment)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>
@@ -776,6 +818,24 @@ function StaffAssessments() {
           onSubjectChange={setBoardSubjectId}
         />
       ) : null}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Eliminar avaliação"
+        description={
+          pendingDelete
+            ? `Eliminar "${pendingDelete.title}"? Esta eliminação é permanente e só é permitida enquanto não houver notas lançadas.`
+            : undefined
+        }
+        confirmLabel="Eliminar"
+        busy={deletingId === pendingDelete?.id}
+        onCancel={() => {
+          if (deletingId === null) setPendingDelete(null);
+        }}
+        onConfirm={() => {
+          if (pendingDelete) void onDelete(pendingDelete);
+        }}
+      />
     </div>
   );
 }

@@ -175,6 +175,7 @@ export function createApiClient(baseUrl: string, tokenStore: TokenStore) {
       request<AssessmentDto>('/assessments', { method: 'POST', body: JSON.stringify(payload) }),
     updateAssessment: (id: string, payload: unknown) =>
       request<AssessmentDto>(`/assessments/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+    deleteAssessment: (id: string) => request<{ id: string }>(`/assessments/${id}`, { method: 'DELETE' }),
     setRequiredTestCount: (subjectId: string, requiredTestCount: number | null) =>
       request<{ id: string; code: string; name: string; requiredTestCount: number | null }>(
         `/assessments/subject/${subjectId}/required-test-count`,
@@ -183,9 +184,13 @@ export function createApiClient(baseUrl: string, tokenStore: TokenStore) {
     subjectBoard: (subjectId: string) => request<SubjectBoard>(`/assessments/subject/${subjectId}/board`),
     setSubjectRules: (
       subjectId: string,
-      payload: { requiredTestCount?: number | null; recurrenceMinAdmission?: number | null },
+      payload: {
+        requiredTestCount?: number | null;
+        recurrenceMinAdmission?: number | null;
+        exemptionMinGrade?: number | null;
+      },
     ) =>
-      request<{ id: string; code: string; name: string; requiredTestCount: number | null; recurrenceMinAdmission: number | null; resultsPublishedAt: string | Date | null }>(
+      request<{ id: string; code: string; name: string; requiredTestCount: number | null; recurrenceMinAdmission: number | null; exemptionMinGrade: number | null; resultsPublishedAt: string | Date | null }>(
         `/assessments/subject/${subjectId}/rules`,
         { method: 'PATCH', body: JSON.stringify(payload) },
       ),
