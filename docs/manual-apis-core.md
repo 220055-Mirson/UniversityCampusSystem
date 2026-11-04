@@ -165,12 +165,16 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 | DELETE | `/departments/:id` | Sim | ADMIN, COORDINATOR | Eliminar departamento (só se não tiver cursos nem docentes) |
 | GET | `/courses` | Sim | Qualquer | Listar cursos (`?departmentId=`) |
 | POST | `/courses` | Sim | ADMIN, COORDINATOR | Criar curso |
+| PATCH | `/courses/:id` | Sim | ADMIN, COORDINATOR | Editar curso (actualização parcial) |
+| DELETE | `/courses/:id` | Sim | ADMIN, COORDINATOR | Eliminar curso (só se não tiver disciplinas, estudantes nem matrículas) |
 | POST | `/courses/batch-with-subjects` | Sim | ADMIN, COORDINATOR | Criar curso + disciplinas numa transação atómica |
 | GET | `/courses/:courseId/subjects` | Sim | Qualquer | Listar disciplinas de um curso |
 | GET | `/subjects` | Sim | Qualquer | Listar disciplinas (`?courseId=`) |
 | POST | `/subjects` | Sim | ADMIN, COORDINATOR | Criar disciplina |
+| PATCH | `/subjects/:id` | Sim | ADMIN, COORDINATOR | Editar disciplina (actualização parcial) |
+| DELETE | `/subjects/:id` | Sim | ADMIN, COORDINATOR | Eliminar disciplina |
 
-**Total Core documentado:** 1 health + **31 endpoints** em `/api/v1` (21 do Core base + 10 da Gestão Académica).
+**Total Core documentado:** 1 health + **35 endpoints** em `/api/v1` (21 do Core base + 14 da Gestão Académica).
 
 ---
 
@@ -671,6 +675,30 @@ Filtro opcional `?courseId=<id>` em `/subjects`. DTO inclui `course: { id, code,
 
 `courseId` obtém-se de `GET /courses`. Curso inexistente → `404 COURSE_NOT_FOUND`; código repetido → `409 SUBJECT_CODE_EXISTS`.
 
+#### PATCH `/courses/:id`
+
+Actualização parcial: envia só os campos a alterar (`code`, `name`, `description`, `departmentId`); `description: null` limpa a descrição. Corpo vazio → `400 VALIDATION_ERROR`; curso inexistente → `404 COURSE_NOT_FOUND`; `departmentId` inexistente → `404 DEPARTMENT_NOT_FOUND`; código repetido → `409 COURSE_CODE_EXISTS`. Roles: ADMIN, COORDINATOR. Regista `COURSE_UPDATE`.
+
+```json
+{ "name": "Licenciatura em Engenharia Informática (novo plano)", "description": null }
+```
+
+#### DELETE `/courses/:id`
+
+Resposta `200` com `{ "ok": true }`. Regra de negócio: se o curso tiver disciplinas, estudantes ou matrículas associados, devolve `400 BUSINESS_RULE_VIOLATION` (a mensagem indica quantos) e não elimina. Curso inexistente → `404 COURSE_NOT_FOUND`. Roles: ADMIN, COORDINATOR. Regista `COURSE_DELETE`.
+
+#### PATCH `/subjects/:id`
+
+Actualização parcial: `code`, `name`, `credits`, `courseId` (permite mudar a disciplina de curso). Corpo vazio ou créditos inválidos → `400 VALIDATION_ERROR`; disciplina inexistente → `404 SUBJECT_NOT_FOUND`; `courseId` inexistente → `404 COURSE_NOT_FOUND`; código repetido → `409 SUBJECT_CODE_EXISTS`. Roles: ADMIN, COORDINATOR. Regista `SUBJECT_UPDATE`.
+
+```json
+{ "name": "Programação I (revista)", "credits": 5 }
+```
+
+#### DELETE `/subjects/:id`
+
+Resposta `200` com `{ "ok": true }`. Disciplina inexistente → `404 SUBJECT_NOT_FOUND`. Roles: ADMIN, COORDINATOR. Regista `SUBJECT_DELETE`.
+
 **Passos de criação:**
 
 1. Reutilizar os modelos `Department`, `Course`, `Subject` (sem migração nova)  
@@ -1029,10 +1057,10 @@ it('lista parking overview autenticado', async () => {
 | HTTP | code típico | Significado |
 | --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | Body inválido (Zod) |
-| 400 | `BUSINESS_RULE_VIOLATION` | Regra de negócio (ex.: eliminar departamento com cursos ou docentes) |
+| 400 | `BUSINESS_RULE_VIOLATION` | Regra de negócio (ex.: eliminar departamento com cursos ou docentes, ou curso com disciplinas, estudantes ou matrículas) |
 | 401 | `UNAUTHORIZED` / `TOKEN_INVALID` / `USER_INACTIVE` | Sem auth ou token inválido |
 | 403 | `FORBIDDEN` | Role sem permissão |
-| 404 | `ROOM_NOT_FOUND`, `SENSOR_NOT_FOUND`, `PARKING_LOT_NOT_FOUND`, `DEPARTMENT_NOT_FOUND`, `COURSE_NOT_FOUND`, … | Recurso inexistente |
+| 404 | `ROOM_NOT_FOUND`, `SENSOR_NOT_FOUND`, `PARKING_LOT_NOT_FOUND`, `DEPARTMENT_NOT_FOUND`, `COURSE_NOT_FOUND`, `SUBJECT_NOT_FOUND`, … | Recurso inexistente |
 | 409 | `CONFLICT` | Ex.: email duplicado |
 | 409 | `DEPARTMENT_CODE_EXISTS`, `COURSE_CODE_EXISTS`, `SUBJECT_CODE_EXISTS`, `DUPLICATE_CODE` | Código académico já existente |
 | 429 | `RATE_LIMITED` | Demasiados pedidos |
@@ -1109,6 +1137,10 @@ Marcar ao validar o Core:
 - [ ] Estudante a criar → 403  
 - [ ] Código repetido → 409  
 - [ ] Eliminar departamento com cursos → 400 `BUSINESS_RULE_VIOLATION`  
+- [ ] Eliminar curso com disciplinas, estudantes ou matrículas → 400 `BUSINESS_RULE_VIOLATION`  
+- [ ] Eliminar disciplina com ADMIN ou COORDINATOR → 200; estudante ou docente → 403  
+- [ ] Editar curso e disciplina com ADMIN ou COORDINATOR → 200; estudante ou docente → 403  
+- [ ] Editar com corpo vazio → 400; com código repetido → 409  
 - [ ] Lote com código duplicado → 409 e nada gravado  
 
 ### Documentação
@@ -1150,3 +1182,6 @@ Marcar ao validar o Core:
 | [manual-construcao-core.md](./manual-construcao-core.md) | Construção do sistema |
 | [architecture.md](./architecture.md) | Arquitectura |
 
+---
+
+*Fim do Manual das APIs do Core.*
