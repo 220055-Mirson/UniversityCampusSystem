@@ -68,6 +68,40 @@ export const updateParkingSpotSchema = z.object({
   plate: mozambiquePlateSchema.optional().nullable(),
 });
 
+export const createDepartmentSchema = z.object({
+  code: z.string().trim().min(2).max(20),
+  name: z.string().trim().min(3).max(120),
+  description: z.string().max(500).optional(),
+});
+
+export const createCourseSchema = z.object({
+  code: z.string().trim().min(2).max(10),
+  name: z.string().trim().min(3).max(120),
+  description: z.string().max(500).optional(),
+  departmentId: z.string().min(1, 'Departamento obrigatório'),
+});
+
+export const createSubjectSchema = z.object({
+  code: z.string().trim().min(2).max(10),
+  name: z.string().trim().min(3).max(120),
+  credits: z.number().int().positive(),
+  courseId: z.string().min(1, 'Curso obrigatório'),
+});
+
+export const batchCreateCourseWithSubjectsSchema = z.object({
+  course: createCourseSchema,
+  subjects: z.array(createSubjectSchema.omit({ courseId: true })).min(1),
+});
+
+export const updateCourseSchema = createCourseSchema
+  .partial()
+  .extend({ description: z.string().max(500).nullable().optional() })
+  .refine((dados) => Object.keys(dados).length > 0, { message: 'Indique pelo menos um campo para actualizar' });
+
+export const updateSubjectSchema = createSubjectSchema
+  .partial()
+  .refine((dados) => Object.keys(dados).length > 0, { message: 'Indique pelo menos um campo para actualizar' });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
@@ -75,30 +109,9 @@ export type CreateIncidentInput = z.infer<typeof createIncidentSchema>;
 export type UpdateIncidentStatusInput = z.infer<typeof updateIncidentStatusSchema>;
 export type CreatePlateReadingInput = z.infer<typeof createPlateReadingSchema>;
 export type UpdateParkingSpotInput = z.infer<typeof updateParkingSpotSchema>;
-
-
-export const createDepartmentSchema = z.object({
-  code: z.string().trim().min(2).max(20),
-  name: z.string().trim().min(3).max(120),
-  description: z.string().max(500).optional(),
-});
-export const createCourseSchema = z.object({
-  code: z.string().trim().min(2).max(10),
-  name: z.string().trim().min(3).max(120),
-  description: z.string().max(500).optional(),
-  departmentId: z.string().min(1, 'Departamento obrigatório'),
-});
-export const createSubjectSchema = z.object({
-  code: z.string().trim().min(2).max(10),
-  name: z.string().trim().min(3).max(120),
-  credits: z.number().int().positive(),
-  courseId: z.string().min(1, 'Curso obrigatório'),
-});
-export const batchCreateCourseWithSubjectsSchema = z.object({
-  course: createCourseSchema,
-  subjects: z.array(createSubjectSchema.omit({ courseId: true })).min(1),
-});
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>;
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 export type CreateSubjectInput = z.infer<typeof createSubjectSchema>;
 export type BatchCreateCourseWithSubjectsInput = z.infer<typeof batchCreateCourseWithSubjectsSchema>;
+export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
+export type UpdateSubjectInput = z.infer<typeof updateSubjectSchema>;
