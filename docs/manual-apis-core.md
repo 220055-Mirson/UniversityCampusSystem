@@ -71,7 +71,6 @@ curl -s http://localhost:4100/health
 | Correlação | Header opcional `x-correlation-id` |
 | Sucesso | `{ "data": ..., "meta": { "correlationId": "..." } }` |
 | Erro | `{ "code": "...", "message": "...", "details": [], "correlationId": "..." }` |
-
 Detalhe: [api-conventions.md](./api-conventions.md).
 
 ### Matriz rápida de autorização
@@ -82,6 +81,11 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 | GET /me, salas, ocorrências, dashboard, devices, parking overview | Sim | Sim | Sim | Sim | Sim |
 | Criar ocorrência | Sim | Sim | Sim | Sim | Sim |
 | Criar sala | Não | Não | Sim | Sim | Sim |
+| Confirmar alerta | Não | Não | Sim | Sim | Sim |
+| Ver e marcar as minhas notificações | Sim | Sim | Sim | Sim | Sim |
+| Criar dispositivo | Não | Não | Sim | Sim | Sim |
+| Alterar estado de dispositivo | Não | Não | Sim | Sim | Sim |
+| Eliminar dispositivo | Não | Não | Não | Sim | Sim |
 | Tratar ocorrência | Não | Não | Sim | Sim | Sim |
 | LPR entrada/saída | Não | Não | Sim | Sim | Sim |
 | Listar users | Não | Não | Não | Sim | Sim |
@@ -114,14 +118,30 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 | GET | `/users` | Sim | ADMIN, COORDINATOR | Listar utilizadores |
 | POST | `/users` | Sim | ADMIN | Criar utilizador |
 
-### 3.4 Campus físico (salas / edifícios)
+### 3.4 Campus físico (salas / edifícios / laboratórios / equipamentos)
 
 | Método | Rota | Auth | Roles | Descrição |
 | --- | --- | --- | --- | --- |
-| GET | `/buildings` | Sim | Qualquer | Listar edifícios |
 | GET | `/rooms` | Sim | Qualquer | Listar salas |
 | GET | `/rooms/:id` | Sim | Qualquer | Obter sala |
 | POST | `/rooms` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Criar sala |
+| PATCH | `/rooms/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Actualizar sala |
+| DELETE | `/rooms/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Eliminar sala |
+| GET | `/buildings` | Sim | Qualquer | Listar edifícios |
+| GET | `/buildings/:id` | Sim | Qualquer | Obter edifício |
+| POST | `/buildings` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Criar edifício |
+| PATCH | `/buildings/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Actualizar edifício |
+| DELETE | `/buildings/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Eliminar edifício |
+| GET | `/laboratories` | Sim | Qualquer | Listar laboratórios |
+| GET | `/laboratories/:id` | Sim | Qualquer | Obter laboratório |
+| POST | `/laboratories` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Criar laboratório |
+| PATCH | `/laboratories/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Actualizar laboratório |
+| DELETE | `/laboratories/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Eliminar laboratório |
+| GET | `/equipment` | Sim | Qualquer | Listar equipamentos |
+| GET | `/equipment/:id` | Sim | Qualquer | Obter equipamento |
+| POST | `/equipment` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Criar equipamento |
+| PATCH | `/equipment/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Actualizar equipamento |
+| DELETE | `/equipment/:id` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Eliminar equipamento |
 
 ### 3.5 Ocorrências
 
@@ -142,10 +162,32 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 
 | Método | Rota | Auth | Roles | Descrição |
 | --- | --- | --- | --- | --- |
+| POST | `/devices` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Criar dispositivo |
+| PATCH | `/devices/:id/status` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Alterar estado |
+| DELETE | `/devices/:id` | Sim | ADMIN, COORDINATOR | Eliminar dispositivo |
 | GET | `/devices` | Sim | Qualquer | Listar dispositivos + sensores |
 | GET | `/sensors/:id/readings` | Sim | Qualquer | Leituras de um sensor |
 | GET | `/alerts` | Sim | Qualquer | Listar alertas |
+| GET | `/notifications` | Sim | Qualquer (só as suas) | Listar as minhas notificações |
+| PATCH | `/notifications/:id/read` | Sim | Qualquer (só as suas) | Marcar como lida |
+#### PATCH `/alerts/:id/ack`
 
+Marca o alerta como confirmado (`acknowledged: true`). Sem corpo. Idempotente: confirmar de novo devolve o alerta sem alterar nada.
+
+**Respostas:**
+
+| Código | Quando |
+| --- | --- |
+| 200 | Alerta confirmado (mesma forma que `GET /alerts`) |
+| 403 | Role sem permissão |
+| 404 | `ALERT_NOT_FOUND` |
+
+**Passos de criação:**
+
+1. Serviço: procura o alerta, actualiza `acknowledged` e regista auditoria `ALERT_ACK`  
+2. Rota com `authorize('ADMIN', 'COORDINATOR', 'TECHNICIAN')`  
+3. Método `ackAlert` no `api-client`
+| PATCH | `/alerts/:id/ack` | Sim | ADMIN, COORDINATOR, TECHNICIAN | Confirmar alerta |
 ### 3.8 Estacionamento
 
 | Método | Rota | Auth | Roles | Descrição |
@@ -155,7 +197,36 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 | POST | `/parking/readings` | Sim | TECHNICIAN, COORDINATOR, ADMIN | Registar entrada/saída LPR |
 | PATCH | `/parking/spots/:id` | Sim | TECHNICIAN, COORDINATOR, ADMIN | Actualizar estado de vaga |
 
-### 3.9 Gestão Académica (departamentos, cursos, disciplinas)
+### 3.9 Grupo Académico (G3 — avaliações, notas, horários, resultados e assiduidade)
+
+| Método | Rota | Auth | Roles | Descrição |
+| --- | --- | --- | --- | --- |
+| GET | `/assessments` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Listar avaliações (filtros por curso/disciplina) |
+| GET | `/assessments/options` | Sim | TEACHER, COORDINATOR, ADMIN | Disciplinas disponíveis para criar avaliações |
+| POST | `/assessments` | Sim | TEACHER (docente da disciplina) | Criar avaliação |
+| GET | `/assessments/:id` | Sim | TEACHER, COORDINATOR, ADMIN | Obter avaliação |
+| GET | `/assessments/:id/roster` | Sim | TEACHER, COORDINATOR, ADMIN | Pauta de notas (estudantes do curso + nota actual) |
+| PATCH | `/assessments/:id` | Sim | TEACHER, COORDINATOR, ADMIN | Alterar avaliação |
+| GET | `/assessments/:id/grades` | Sim | TEACHER, COORDINATOR, ADMIN | Notas da avaliação |
+| POST | `/assessments/:id/grades` | Sim | TEACHER (docente da disciplina) | Lançar nota em bloco |
+| GET | `/my/grades` | Sim | STUDENT | Notas do próprio estudante |
+| GET | `/my/final-grades` | Sim | STUDENT | Nota final por disciplina (com exame: (admissão+exame)/2) |
+| GET | `/students/:id/grades` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Notas do estudante (STUDENT: só o próprio) |
+| GET | `/students/:id/final-grades` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Nota final por disciplina (STUDENT: só o próprio) |
+| POST | `/results` | Sim | TEACHER (docente da disciplina) | Registar resultado/acta |
+| GET | `/results` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Listar resultados (STUDENT: só os seus) |
+| GET | `/schedules` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Horários (filtros `courseId`, `subjectId`, `teacherId`, `roomId`, `from`, `to`) |
+| GET | `/schedules/options` | Sim | COORDINATOR, ADMIN | Dados de referência para gestão de horários |
+| POST | `/schedules` | Sim | COORDINATOR, ADMIN | Criar sessão de horário |
+| PATCH | `/schedules/:id` | Sim | COORDINATOR, ADMIN | Alterar sessão de horário |
+| DELETE | `/schedules/:id` | Sim | COORDINATOR, ADMIN | Eliminar sessão de horário |
+| GET | `/attendance` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Registos de assiduidade (scoping por role) |
+| GET | `/attendance/summary` | Sim | STUDENT, TEACHER, COORDINATOR, ADMIN | Taxas de assiduidade por estudante |
+| GET | `/attendance/sessions` | Sim | TEACHER, COORDINATOR, ADMIN | Sessões disponíveis para registar assiduidade |
+| GET | `/attendance/sessions/:id` | Sim | TEACHER, COORDINATOR, ADMIN | Pauta de assiduidade da sessão |
+| POST | `/attendance/sessions/:id` | Sim | TEACHER, COORDINATOR, ADMIN | Registar/actualizar assiduidade em bloco |
+
+### 3.10 Gestão Académica (departamentos, cursos, disciplinas)
 
 | Método | Rota | Auth | Roles | Descrição |
 | --- | --- | --- | --- | --- |
@@ -174,7 +245,7 @@ Detalhe: [api-conventions.md](./api-conventions.md).
 | PATCH | `/subjects/:id` | Sim | ADMIN, COORDINATOR | Editar disciplina (actualização parcial) |
 | DELETE | `/subjects/:id` | Sim | ADMIN, COORDINATOR | Eliminar disciplina |
 
-**Total Core documentado:** 1 health + **35 endpoints** em `/api/v1` (21 do Core base + 14 da Gestão Académica).
+**Total Core documentado:** 1 health + **72 endpoints** em `/api/v1` (23 do Core base, incluindo 2 novos em `/rooms`, + 14 da Gestão Académica + 14 do Grupo Infraestrutura + 21 do Grupo Académico G3 — avaliações, notas, resultados, horários e assiduidade).
 
 ---
 
@@ -284,6 +355,8 @@ Chamar `audit({ action, resource, actorId, correlationId, ... })` em mutações 
 | --- | --- |
 | Router | `apps/api/src/modules/auth/http/authRouter.ts` |
 | Serviço | `apps/api/src/modules/auth/application/authService.ts` |
+| Serviço (alertas) | `apps/api/src/modules/devices/application/alertService.ts` |
+| Serviço (notificações) | `apps/api/src/modules/notifications/application/notificationService.ts` |
 | Schemas | `loginSchema`, `refreshSchema` |
 
 #### POST `/auth/login`
@@ -379,16 +452,23 @@ Só **ADMIN** pode criar.
 
 ---
 
-### 5.4 Salas e edifícios (`rooms`)
+### 5.4 Salas e edifícios (`rooms` / `buildings`)
 
 | Item | Detalhe |
 | --- | --- |
-| Router | `apps/api/src/modules/rooms/http/roomsRouter.ts` |
-| Serviço | `apps/api/src/modules/rooms/application/roomService.ts` |
+| Router salas | `apps/api/src/modules/rooms/http/roomsRouter.ts` |
+| Serviço salas | `apps/api/src/modules/rooms/application/roomService.ts` |
+| Router edifícios | `apps/api/src/modules/buildings/http/buildingsRouter.ts` |
+| Serviço edifícios | `apps/api/src/modules/buildings/application/buildingService.ts` |
+| Modelos Prisma | `Building`, `Room`, enum `RoomStatus` (já existentes no Core) |
 
-#### GET `/buildings`
+#### GET `/buildings` / GET `/buildings/:id`
 
-Lista edifícios (seed: tipicamente A, B, …).
+Lista/obtém edifícios (seed: tipicamente A, B, …). O DTO inclui `roomsCount`. Estes endpoints são servidos pelo módulo `buildings`.
+
+#### POST / PATCH / DELETE `/buildings(/:id)`
+
+Roles ADMIN, COORDINATOR, TECHNICIAN. Código repetido → `409 BUILDING_CODE_EXISTS`. Auditoria: `BUILDING_CREATE`, `BUILDING_UPDATE`, `BUILDING_DELETE`.
 
 #### GET `/rooms` / GET `/rooms/:id`
 
@@ -411,11 +491,19 @@ DTO inclui `building: { id, code, name }`.
 
 `buildingId` obtém-se de `GET /buildings`.
 
+#### PATCH `/rooms/:id`
+
+Aceita os mesmos campos de `POST`, todos opcionais. Código repetido → `409 ROOM_CODE_EXISTS`. Auditoria `ROOM_UPDATE`.
+
+#### DELETE `/rooms/:id`
+
+Resposta `200` com `{ "id": "<id>" }`. Auditoria `ROOM_DELETE`.
+
 **Passos de criação:**
 
 1. Modelos `Building`, `Room` + enum `RoomStatus`  
-2. `createRoomSchema`  
-3. Serviço list/get/create + audit  
+2. `createRoomSchema`, `createBuildingSchema`  
+3. Serviço list/get/create/update/delete + audit  
 4. Roles mutação: ADMIN, COORDINATOR, TECHNICIAN  
 
 ---
@@ -499,15 +587,48 @@ Query: `limit` (default 50).
 
 ---
 
-### 5.8 IoT — devices, sensors, alerts
+### 5.8 IoT — devices, sensors, alerts, notifications
 
 | Item | Detalhe |
 | --- | --- |
+| Router | `apps/api/src/modules/devices/http/devicesRouter.ts` |
+| Serviço (criação) | `apps/api/src/modules/devices/application/deviceService.ts` |
 | Router | `apps/api/src/modules/devices/http/devicesRouter.ts` |
 
 #### GET `/devices`
 
 Dispositivos com `sensors` e `room`.
+
+#### POST `/devices`
+
+**Body:**
+
+```json
+{
+  "code": "TEMP-A-01",
+  "name": "Sensor de temperatura A",
+  "type": "sensor"
+}
+```
+
+Campos opcionais: `status` (por omissão `UNKNOWN`), `roomId`, `mqttTopic`.
+
+**Respostas:**
+
+| Código | Quando |
+| --- | --- |
+| 201 | Dispositivo criado (mesma forma que `GET /devices`) |
+| 400 | `VALIDATION_ERROR` com `details` por campo |
+| 403 | Role sem permissão |
+| 404 | `ROOM_NOT_FOUND` se o `roomId` não existir |
+| 409 | `DEVICE_CODE_TAKEN` se o `code` já existir |
+
+**Passos de criação:**
+
+1. `createDeviceSchema` em `packages/validation`  
+2. Serviço: verifica código único e sala, cria e regista auditoria `DEVICE_CREATE`  
+3. Rota com `authorize('ADMIN', 'COORDINATOR', 'TECHNICIAN')`  
+4. DTO `DeviceDto` em shared-types e método `createDevice` no `api-client`
 
 #### GET `/sensors/:id/readings`
 
@@ -523,6 +644,22 @@ Até 100 leituras; campo `isDemo` indica dados fictícios.
 2. Seed com dados DEMO  
 3. Routers GET autenticados (sem mutação nesta fase)  
 4. Preparação futura MQTT via `Device.mqttTopic`  
+
+#### GET `/notifications` e PATCH `/notifications/:id/read`
+
+Cada utilizador só vê e marca as **suas** notificações (filtro por `userId` no serviço). Marcar uma notificação de outro utilizador devolve `404 NOTIFICATION_NOT_FOUND`, igual a um id inexistente, para não revelar que o id existe.
+
+| Código | Quando |
+| --- | --- |
+| 200 | Lista, ou notificação marcada como lida (idempotente) |
+| 404 | `NOTIFICATION_NOT_FOUND` |
+
+**Passos de criação:**
+
+1. `NotificationDto` em shared-types  
+2. Serviço com filtro `userId` (isolamento entre utilizadores)  
+3. Router só com `authenticate`, sem `authorize`: a segurança está no filtro  
+4. Métodos `notifications` e `markNotificationRead` no `api-client`
 
 ---
 
@@ -578,9 +715,110 @@ Matrículas válidas:
 5. Roles TECHNICIAN+ nas mutações  
 6. Seed do parque demo  
 
+### 5.10 Grupo Académico — Horários e Avaliações (G3)
+
+| Item | Detalhe |
+| --- | --- |
+| Routers | `apps/api/src/modules/schedules/http/schedulesRouter.ts` e `apps/api/src/modules/assessments/http/assessmentsRouter.ts` |
+| Serviços | `.../schedules/application/scheduleService.ts` e `.../assessments/application/*Service.ts` |
+| Validação | `packages/validation/src/index.ts` (`createScheduleSchema`, `updateScheduleSchema`, `gradeSchema`, …) |
+| UI | `apps/web/src/pages/SchedulesPage.tsx` (através de `useAuth().api`) |
+
+#### GET `/schedules`
+
+Devolve os horários visíveis para o papel autenticado (contrato G3):
+
+- STUDENT: sessões do próprio curso; `?studentId` de outro estudante → **403** (anti-BOLA).
+- TEACHER: sessões em que é docente.
+- COORDINATOR/ADMIN: todas; `?studentId` resolve o curso do estudante.
+
+Filtros opcionais (apenas restringem, nunca ampliam o acesso): `courseId`, `subjectId`, `teacherId`, `roomId`, `from`, `to`. Datas em ISO-8601; valor inválido → **400 `VALIDATION_ERROR`**.
+
+#### GET `/schedules/options`
+
+Apenas COORDINATOR/ADMIN. Devolve `{ courses, subjects, teachers, rooms }` para preencher o formulário de gestão. Docentes listados são utilizadores activos com role TEACHER.
+
+#### POST `/schedules`
+
+Apenas COORDINATOR/ADMIN.
+
+```json
+{
+  "title": "Aula PTP3 — Projecto",
+  "subjectId": "<subject-id>",
+  "courseId": "<course-id>",
+  "teacherId": "<user-id-role-TEACHER-ou-null>",
+  "roomId": "<room-id-ou-null>",
+  "startsAt": "2026-11-02T09:00:00.000Z",
+  "endsAt": "2026-11-02T10:30:00.000Z"
+}
+```
+
+Erros de negócio: disciplina inexistente (**404 `SUBJECT_NOT_FOUND`**), curso inexistente (**404 `COURSE_NOT_FOUND`**), docente inexistente (**404 `TEACHER_NOT_FOUND`**), sala inexistente (**404 `ROOM_NOT_FOUND`**), utilizador indicado como docente sem role TEACHER (**409 `TEACHER_ROLE_MISMATCH`**), disciplina de outro curso (**409 `SUBJECT_COURSE_MISMATCH`**), `endsAt <= startsAt` (**400**).
+
+#### PATCH `/schedules/:id`
+
+Alteração parcial; as validações de referências e datas são reaplicadas sobre o estado final.
+
+#### DELETE `/schedules/:id`
+
+Apenas COORDINATOR/ADMIN; devolve `{ "data": { "id": "..." } }`. Registado na auditoria (`SCHEDULE_DELETE`). Id inexistente → **404 `SCHEDULE_NOT_FOUND`**.
+
+> Nota: `ClassSchedule.roomId` é uma referência solta (sem relação Prisma). O campo `room` do `ScheduleDto` é resolvido numa segunda consulta e pode vir `null`.
+
+#### Avaliações e resultados
+
+`POST /assessments` aceita `points` (com `maxPoints`) ou `percentage`; `POST /assessments/:id/grades` lança notas respeitando o tipo. `GET /my/grades` (STUDENT), `GET /students/:id/grades` e `/final-grades` (staff, com verificação anti-BOLA), `POST /results` e `GET /results` completam o contrato G3.
+
 ---
 
-### 5.10 Gestão Académica (`academic`)
+### 5.11 Grupo Académico — Assiduidade (G3)
+
+| Item | Detalhe |
+| --- | --- |
+| Router | `apps/api/src/modules/attendance/http/attendanceRouter.ts` |
+| Serviço | `apps/api/src/modules/attendance/application/attendanceService.ts` |
+| Validação | `packages/validation/src/index.ts` (`attendanceStatusSchema`, `markAttendanceSchema`) |
+| UI | `apps/web/src/pages/AttendancePage.tsx` (através de `useAuth().api`) |
+
+#### GET `/attendance/sessions`
+
+Apenas TEACHER (sessões que lecciona), COORDINATOR, ADMIN (todas). Reutiliza `listSchedules` para devolver as sessões onde se pode registar assiduidade.
+
+#### GET `/attendance/sessions/:id`
+
+Pauta da sessão: todos os estudantes do curso da sessão, com o estado actual (`PRESENT`, `ABSENT`, `LATE`, `JUSTIFIED`) ou `null` se ainda não registado. Apenas TEACHER (sessões que lecciona), COORDINATOR, ADMIN.
+
+#### POST `/attendance/sessions/:id`
+
+Registo/actualização em bloco (upsert). Body:
+
+```json
+{
+  "records": [
+    { "studentId": "<studentProfile-id>", "status": "PRESENT", "note": "Chegou atrasado" },
+    { "studentId": "...", "status": "ABSENT", "note": null }
+  ]
+}
+```
+
+Validações: lista não vazia, estado válido, estudante existe, estudante pertence ao curso da sessão (senão **409 `STUDENT_COURSE_MISMATCH`**). Regista auditoria `ATTENDANCE_MARK`.
+
+#### GET `/attendance`
+
+Lista de registos (scoping por role):
+- STUDENT: apenas os próprios.
+- TEACHER: registos das sessões que lecciona.
+- COORDINATOR/ADMIN: todos; filtros opcionais `studentId`, `scheduleId`, `status`.
+- STUDENT a filtrar `studentId` de outro → **403** (anti-BOLA).
+
+#### GET `/attendance/summary`
+
+Taxa de assiduidade por estudante: `(PRESENT + LATE) / total * 100`. Scoping igual a `/attendance`. `studentId` opcional (STUDENT só o próprio; staff qualquer).
+
+---
+
+### 5.12 Gestão Académica (`academic`)
 
 Hierarquia: **Department (1) → Course (N) → Subject (N)**. Os três recursos partilham o mesmo router e o mesmo serviço.
 
@@ -706,7 +944,7 @@ Resposta `200` com `{ "ok": true }`. Disciplina inexistente → `404 SUBJECT_NOT
 3. Serviço com Prisma, `$transaction` no lote e `audit()` nas mutações  
 4. Roles de escrita: ADMIN, COORDINATOR (leitura: qualquer autenticado)  
 5. DTOs em `shared-types`, métodos em `api-client` e três páginas no `apps/web`  
-6. Testes: `academic.integration.test.ts`  
+6. Testes: `Academic.integration.test.ts`  
 
 ---
 
@@ -960,7 +1198,7 @@ npm run test:api
 | Ficheiro | Cobertura |
 | --- | --- |
 | `apps/api/src/modules/auth/http/auth.integration.test.ts` | health, login, /me, dashboard 401, fluxo salas→ocorrências→audit, students sem /users |
-| `apps/api/src/modules/academic/http/academic.integration.test.ts` | Gestão Académica: auth/RBAC, CRUD de departamentos, cursos e disciplinas, regra de eliminação, rollback do lote, auditoria |
+| `apps/api/src/modules/academic/http/Academic.integration.test.ts` | Gestão Académica: auth/RBAC, departamentos, cursos e disciplinas (criar, editar, eliminar), regras de eliminação, rollback do lote, auditoria |
 | `apps/api/src/modules/auth/domain/validation.test.ts` | validação |
 | `apps/api/src/modules/parking/domain/mozambiquePlate.test.ts` | matrículas MZ |
 
@@ -1037,6 +1275,29 @@ it('lista parking overview autenticado', async () => {
 ```text
 1. Login qualquer
 2. GET /devices → sensorId
+#### PATCH `/devices/:id/status`
+
+**Body:** `{ "status": "MAINTENANCE" }` (`ONLINE`, `OFFLINE`, `MAINTENANCE` ou `UNKNOWN`).
+
+Idempotente: pôr o estado que já tem devolve o dispositivo sem alterar nada. Passar para `OFFLINE`, ou de `OFFLINE` para `ONLINE`, cria um alerta e uma notificação por cada utilizador com role de gestão, na mesma transacção que o estado.
+
+| Código | Quando |
+| --- | --- |
+| 200 | Dispositivo com o novo estado |
+| 400 | `VALIDATION_ERROR` |
+| 403 | Role sem permissão |
+| 404 | `DEVICE_NOT_FOUND` |
+
+#### DELETE `/devices/:id`
+
+Só `ADMIN` e `COORDINATOR`. Um dispositivo `ONLINE` não se elimina.
+
+| Código | Quando |
+| --- | --- |
+| 200 | Eliminado (devolve `{ "id": "..." }`) |
+| 403 | Role sem permissão |
+| 404 | `DEVICE_NOT_FOUND` |
+| 409 | `DEVICE_ONLINE` |
 3. GET /sensors/:id/readings
 4. GET /alerts
 ```
@@ -1134,13 +1395,12 @@ Marcar ao validar o Core:
 
 - [ ] Listar departamentos, cursos e disciplinas (qualquer role autenticado)  
 - [ ] Criar departamento / curso / disciplina com ADMIN ou COORDINATOR → 201  
-- [ ] Estudante a criar → 403  
+- [ ] Estudante a criar, editar ou eliminar → 403  
 - [ ] Código repetido → 409  
+- [ ] Editar curso e disciplina com ADMIN ou COORDINATOR → 200; corpo vazio → 400  
 - [ ] Eliminar departamento com cursos → 400 `BUSINESS_RULE_VIOLATION`  
 - [ ] Eliminar curso com disciplinas, estudantes ou matrículas → 400 `BUSINESS_RULE_VIOLATION`  
-- [ ] Eliminar disciplina com ADMIN ou COORDINATOR → 200; estudante ou docente → 403  
-- [ ] Editar curso e disciplina com ADMIN ou COORDINATOR → 200; estudante ou docente → 403  
-- [ ] Editar com corpo vazio → 400; com código repetido → 409  
+- [ ] Eliminar disciplina com ADMIN ou COORDINATOR → 200  
 - [ ] Lote com código duplicado → 409 e nada gravado  
 
 ### Documentação
@@ -1163,11 +1423,50 @@ Marcar ao validar o Core:
 | `/dashboard` | `modules/dashboard/http/dashboardRouter.ts` |
 | `/audit-events` | `modules/audit/http/auditRouter.ts` |
 | `/devices`, `/sensors/:id/readings`, `/alerts` | `modules/devices/http/devicesRouter.ts` |
+| Criação de dispositivos | `modules/devices/application/deviceService.ts` |
 | `/parking/*` | `modules/parking/http/parkingRouter.ts` |
 | `/departments`, `/courses`, `/subjects` | `modules/academic/http/academicRouter.ts` |
+| `/financial/*` | `modules/financial/http/financialRouter.ts` |
 | Middleware JWT/RBAC | `apps/api/src/middleware/auth.ts` |
 | Schemas Zod | `packages/validation/src/index.ts` |
 | Cliente frontend | `packages/api-client/src/index.ts` |
+| Confirmação de alertas | `modules/devices/application/alertService.ts` |
+
+---
+
+## Módulo financeiro
+
+A interface `/financial` consome exclusivamente o cliente HTTP partilhado e apresenta as acções de acordo com o perfil autenticado:
+
+- `STUDENT` consulta as próprias dívidas, pagamentos, contestações e avisos, e pode submeter uma contestação;
+- `FINANCE` pesquisa estudantes do Core, gere dívidas e pagamentos, decide contestações, acompanha avisos, gere salários de docentes e emite relatórios mensais;
+- `ADMIN` consulta os dados financeiros e salários, imprime relatórios e configura as políticas financeiras; não cria nem altera salários;
+- os restantes perfis não têm acesso ao módulo financeiro.
+
+A criação de utilizadores e os dados académicos de estudantes e docentes continuam sob responsabilidade do Core. A pesquisa financeira lê apenas a identidade mínima necessária. O registo de pagamento salarial confirma um pagamento já efectuado e não inicia transferências bancárias.
+
+### Endpoints financeiros
+
+| Área | Endpoints principais | Perfis |
+| --- | --- | --- |
+| Dívidas e pagamentos | `GET/POST /financial/debts`, `GET /financial/debts/:id`, `POST /financial/payments` | STUDENT lê os próprios dados; FINANCE/ADMIN consultam; FINANCE regista |
+| Estado, histórico e avisos | `GET /financial/students/:id/status`, `GET /financial/students/:id/history`, `GET /financial/students/:id/notifications` | STUDENT próprio; FINANCE/ADMIN |
+| Pesquisa de estudantes | `GET /financial/students` | FINANCE/ADMIN |
+| Contestações | `GET/POST/PATCH /financial/analysis-requests` | STUDENT submete e consulta as próprias; FINANCE/ADMIN consultam; FINANCE decide |
+| Resumo e políticas | `GET /financial/reports`, `GET/PATCH /financial/policies/:id` | FINANCE/ADMIN; política alterada apenas por ADMIN |
+| Entrega de avisos | `GET/POST /financial/notifications/:id/delivery|retry` | FINANCE/ADMIN |
+| Docentes e salários | `GET /financial/teachers`, `GET/POST/PATCH /financial/salaries`, `POST /financial/salaries/:id/payment` | FINANCE gere; ADMIN apenas consulta |
+| Relatórios mensais | `GET /financial/reports/payments`, `GET /financial/reports/salaries` | FINANCE/ADMIN |
+
+Os parâmetros, corpos, respostas e códigos de erro estão definidos em [openapi.yaml](./openapi.yaml). A matriz completa está em [authorization-matrix.md](./authorization-matrix.md).
+
+### Verificação
+
+```bash
+npm run test:financial:isolated
+```
+
+O teste cria uma base PostgreSQL descartável, aplica todas as migrações, executa o build e valida API e frontend. As evidências e capturas estão em [integration-evidence/README.md](./integration-evidence/README.md).
 
 ---
 
